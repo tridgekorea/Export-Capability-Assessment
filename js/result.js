@@ -31,40 +31,22 @@ function renderResult() {
 
   document.getElementById('insights-box').innerHTML = `
     <div class="insight info"><div class="it">✓ 강점 영역</div>
-      <p>${strong.length ? strong.join(', ') + '이 우수합니다. 바이어 피칭 시 이 역량을 전면에 내세우세요.' : '진단 항목을 더 입력해주세요.'}</p></div>
+      <p>${strong.length ? strong.join(', ') + '이 우수합니다. ARK 아웃리치 메시지 작성 시 이 역량을 핵심 피칭 포인트로 활용하세요.' : '진단 항목을 더 입력해주세요.'}</p></div>
     <div class="insight warn"><div class="it">⚠ 보완 필요</div>
-      <p>${weak.length ? weak.join(', ') + ' 역량 강화가 선행되어야 바이어 발굴 효과가 높아집니다.' : '전반적으로 양호한 수준입니다.'}</p></div>
-    <div class="insight ok"><div class="it">💡 ARK 활용 포인트</div>
-      <p>${market} 내 ${product} 수입 실적 바이어를 HS코드로 필터링하고, ${strong[0] || '제품역량'} 중심의 첫 접촉 메시지를 구성하세요.</p></div>`;
+      <p>${weak.length ? weak.join(', ') + ' 역량이 취약합니다. ARK가 아웃리치·미팅 세팅을 대행하는 동안 이 영역을 병행 보완하세요.' : '전반적으로 양호한 수준입니다.'}</p></div>
+    <div class="insight ok"><div class="it">💡 다음 단계</div>
+      <p>ARK가 ${market} 내 ${product} 수요가 실재하는 바이어를 6.8억 건 실거래 데이터에서 발굴하고, 30개+ 언어로 직접 아웃리치를 대행합니다. 계약 후 실제 바이어 진단 리포트를 제공합니다.</p></div>`;
 
-  // ARK Strategy
+  // ARK 실행 프로세스
   document.getElementById('ark-strategy').innerHTML = `
-    <div class="insight info"><div class="it">🔍 ARK 권장 검색 조건</div>
-      <p style="line-height:1.9">
-        수입 실적: 최근 12개월 이내 · 수입액 $50만불+ 중소형 유통사 우선<br>
-        채널: ${overallAvg >= 3.5 ? '온+오프라인 멀티채널 바이어' : '온라인 전문 바이어부터 접근 권장'}<br>
-        인증: ${product.includes('식품') ? 'FDA·HACCP 요구 바이어 매칭' : '현지 인증 보유 여부 확인 후 접촉'}<br>
-        결제: ${(STATE.scores['payment'] || 0) >= 3 ? 'L/C·T/T 모두 가능 바이어' : 'T/T 선호 바이어부터 시작'}
+    <div class="insight info"><div class="it">ARK 실행 프로세스</div>
+      <p style="line-height:2">
+        <strong>1 분석</strong> — 귀사 제품 HS코드로 수요가 실재하는 시장·바이어를 데이터로 추려냅니다<br>
+        <strong>2 발굴·스코어링</strong> — 실제 소싱 활동·구매 의도 기준으로 바이어 우선순위를 매깁니다<br>
+        <strong>3 AI 다국어 아웃리치</strong> — 30개+ 언어로 초개인화 메시지를 바이어에게 직접 발송합니다<br>
+        <strong>4 미팅 세팅</strong> — 관심 바이어와의 미팅을 직접 잡고 초기 커뮤니케이션을 중계합니다<br>
+        <span style="color:var(--color-text-tertiary);font-size:11px">※ 가격 협상·계약 체결은 고객사가 직접 진행합니다. ARK는 검증된 바이어를 테이블 위에 올리는 단계까지 책임집니다.</span>
       </p></div>`;
-
-  // Buyer cards
-  const buyers = [
-    { name:'K-Food Direct LLC',  loc:'🇺🇸 미국 · 뉴욕',              match:91, tags:['연 $2M+ 수입','아마존 FBA','한국식품 전문'], note:'빠른 온보딩, 소량 테스트 발주 가능' },
-    { name:'Sunrise Trading Co.', loc:'🇯🇵 일본 · 도쿄',              match:84, tags:['편의점 납품','소량 다품종','K-푸드 집중'], note:'한국 식품 트렌드 적극 소싱 중' },
-    { name:'AsiaBridge GmbH',     loc:'🇩🇪 독일 · 프랑크푸르트',      match:76, tags:['EU 전 지역','비건 선호','인증 필수'], note:'비건·오가닉 제품 수요 급증, 인증 필수' },
-  ];
-  document.getElementById('buyer-cards').innerHTML = buyers.map(b => `
-    <div class="buyer-card">
-      <div class="buyer-top">
-        <div>
-          <div class="buyer-name">${b.name}</div>
-          <div class="buyer-loc">${b.loc}</div>
-          <div class="buyer-tags">${b.tags.map(t => `<span class="buyer-tag">${t}</span>`).join('')}</div>
-        </div>
-        <div style="text-align:right"><div class="match-pct">${b.match}%</div><div class="match-lbl">매칭률</div></div>
-      </div>
-      <div class="buyer-note">${b.note}</div>
-    </div>`).join('');
 }
 
 function drawRadar(canvasId) {
