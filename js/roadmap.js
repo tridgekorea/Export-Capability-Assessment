@@ -134,8 +134,7 @@ ARK 담당자 핵심 메모: 가장 중요한 병목 1가지와 해결 방향 2~
     status.innerHTML = '✓ 로드맵 생성 완료';
     btn.disabled = false;
     btn.textContent = '✦ 다시 생성';
-    addRoadmapPdfBtn(output);
-
+    addRoadmapHtmlBtn(output);
   } catch(e) {
     status.className = 'ai-status error';
     status.innerHTML = `오류: ${e.message}`;
@@ -378,206 +377,67 @@ function parseAndRenderPhases(text, container) {
   }).join('');
 }
 
-function addRoadmapPdfBtn(container) {
-  const existing = document.getElementById('roadmap-pdf-btn');
+
+
+function addRoadmapHtmlBtn(container) {
+  const existing = document.getElementById('roadmap-html-btn');
   if (existing) existing.remove();
   const btn = document.createElement('button');
-  btn.id = 'roadmap-pdf-btn';
+  btn.id = 'roadmap-html-btn';
   btn.style.cssText = 'display:block;width:100%;margin-top:1rem;padding:11px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
-  btn.textContent = '⬇ 로드맵 PDF 다운로드';
-  btn.onclick = downloadRoadmapPdf;
+  btn.textContent = '⬇ 로드맵 HTML 저장';
+  btn.onclick = downloadRoadmapHtml;
   container.appendChild(btn);
 }
 
-async function downloadRoadmapPdf() {
+function downloadRoadmapHtml() {
   const rmEl = document.querySelector('.rm');
   if (!rmEl) { alert('로드맵을 먼저 생성해주세요.'); return; }
-  if (!window.jspdf) { alert('PDF 라이브러리 로딩 중입니다.'); return; }
 
-  const btn = document.getElementById('roadmap-pdf-btn');
-  if (btn) { btn.textContent = '⏳ PDF 생성 중...'; btn.disabled = true; }
+  const name = getField('f-name') || '기업명';
+  const date = nowStr();
 
-  // html2canvas로 화면 캡처 → PDF (한글 깨짐 없음)
-  try {
-    if (!window.html2canvas) {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-    const canvas = await html2canvas(rmEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, H = 297;
-    const imgW = W;
-    const imgH = (canvas.height * imgW) / canvas.width;
-    let posY = 0;
-    let remaining = imgH;
-    let first = true;
-    while (remaining > 0) {
-      if (!first) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, posY, imgW, imgH);
-      posY -= H;
-      remaining -= H;
-      first = false;
-    }
-    const name = getField('f-name') || 'report';
-    pdf.save(`ARK_수출로드맵_${name.replace(/\s/g,'_')}_${nowStr()}.pdf`);
-    if (btn) { btn.textContent = '⬇ 로드맵 PDF 다운로드'; btn.disabled = false; }
-    return;
-  } catch(e) {
-    console.warn('html2canvas 실패, 텍스트 PDF로 대체:', e);
-    if (btn) { btn.textContent = '⬇ 로드맵 PDF 다운로드'; btn.disabled = false; }
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARK 수출 로드맵 · ${name} · ${date}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    color: #1a1a18;
+    background: #f5f4f0;
+    padding: 2rem;
   }
-
-  // fallback: 텍스트 PDF
-  const { jsPDF } = window.jspdf;
-  let doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-
-  // PDF는 영문/숫자 위주로 구성 (한글은 이미지 캡처 방식 안내)
-  const W=210, M=18, cw=W-M*2;
-  let y=22;
-
-  const { overallAvg, areaScores } = STATE;
-  const name    = getField('f-name')    || '기업명';
-  const product = getField('f-product') || '-';
-  const market  = getField('f-market')  || '-';
-  const f = calcFunnel(overallAvg, market);
-  const g = exportGoals(overallAvg);
-  const grade  = overallAvg>=4?'Excellent':overallAvg>=3?'Good':overallAvg>=2?'Fair':'Early';
-  const strong = Object.entries(areaScores).filter(([,v])=>v.score>=3.5).map(([k])=>k);
-  const weak   = Object.entries(areaScores).filter(([,v])=>v.score<2.5).map(([k])=>k);
-
-  const chkY = (n=8) => { if(y+n>275){doc.addPage();y=20;} };
-  const sec  = (t) => {
-    chkY(14); y+=3;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(24,95,165);
-    doc.text(t, M, y); y+=4;
-    doc.setDrawColor(24,95,165); doc.setLineWidth(0.2); doc.line(M,y,W-M,y); y+=5;
-    doc.setTextColor(40,40,40);
-  };
-  const row = (lbl, val) => {
-    chkY(7);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(110,110,110);
-    doc.text(String(lbl), M, y);
-    doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
-    const ls = doc.splitTextToSize(String(val), cw-42);
-    doc.text(ls, M+42, y); y += ls.length*5+1;
-  };
-
-  // 헤더
-  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(24,95,165);
-  doc.text('Tridge ARK - Export Roadmap', M, y); y+=7;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150,150,150);
-  doc.text(`${name} | ${nowStr()} | Score: ${overallAvg}/5.0`, M, y); y+=8;
-  doc.setDrawColor(200,210,220); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
-
-  sec('1. Company & Capability Summary');
-  row('Company', name);
-  row('Product', product);
-  row('Target Market', `${market} (${f.region})`);
-  row('Total Score', `${overallAvg}/5.0 (${grade})`);
-  row('Strength', strong.join(', ') || 'N/A');
-  row('Weakness', weak.join(', ')   || 'N/A');
-  y+=4;
-
-  sec('2. ARK Buyer Funnel');
-  row('Region Response Rate', `${(f.rate*100).toFixed(0)}% (${f.region} actual)`);
-  row('Outreach', `${f.outreach} companies`);
-  row('Response', `${f.response} cases`);
-  row('Meeting',  `${f.meeting} cases`);
-  row('Sample Order', `${f.sampleOrder} cases`);
-  row('Contract', `${f.contract} cases`);
-  y+=4;
-
-  sec('3. Phase KPI');
-  row('Short-term (0-3M)', `Meeting ${f.meeting} cases / ${g.s}`);
-  row('Mid-term (3-12M)',  `Contract ${f.contract} cases / ${g.m}`);
-  row('Long-term (12M+)', `5 countries / ${g.l}`);
-  y+=4;
-
-  sec('4. Pre-Outreach Checklist');
-  ['[Required] English product catalog + FOB price sheet',
-   '[Required] Sample stock 30+ units, ready to ship',
-   '[Required] Designate export manager',
-   '[Recommended] MOQ / lead time / payment terms agreed',
-   '[Recommended] English company profile (1-2 pages)',
-  ].forEach((item, i) => {
-    chkY(7);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(60,60,60);
-    doc.text(`${i+1}. ${item}`, M+4, y); y+=6;
-  });
-  y+=4;
-
-  sec('5. Immediate Action Items');
-  [['English catalog + price sheet',  'Client Marketing', '2 weeks'],
-   ['30 sample units ready',          'Client Production','2 weeks'],
-   ['Designate export manager',       'Client CEO',       '1 week'],
-   ['Confirm HS code for ARK',        'ARK Manager',      '1 week'],
-   ['MOQ/lead time/payment agreed',   'Client Exec',      '2 weeks'],
-   ['FDA registration initiated',     'Client Export',    '1 month'],
-  ].forEach(([a,o,d]) => {
-    chkY(7);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(40,40,40);
-    const ls = doc.splitTextToSize(a, cw-50);
-    doc.text(ls, M, y);
-    doc.setTextColor(120,120,120);
-    doc.text(`${o} · ${d}`, W-M, y, {align:'right'});
-    y += ls.length*5+2;
-  });
-
-  // AI 단계별 전략 텍스트
-  const phaseEls = document.querySelectorAll('#rm-phases > div');
-  if (phaseEls.length > 0) {
-    y+=4; sec('6. AI Phase Strategy');
-    phaseEls.forEach((ph, idx) => {
-      chkY(12);
-      const spans = ph.querySelectorAll('span');
-      const titleText = spans[0]?.textContent || `Phase ${idx+1}`;
-      const kpiText   = spans[1]?.textContent || '';
-      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(24,95,165);
-      doc.text(`${titleText} ${kpiText ? '— '+kpiText : ''}`, M, y); y+=6;
-
-      const desc = ph.querySelector('p')?.textContent || '';
-      if (desc) {
-        const ls = doc.splitTextToSize(desc, cw);
-        doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(60,60,60);
-        ls.forEach(l => { chkY(6); doc.text(l, M, y); y+=5; });
-      }
-
-      const arkItems = [...ph.querySelectorAll('li')].slice(0, 3).map(l => l.textContent.replace('·','').trim());
-      const cliItems = [...ph.querySelectorAll('li')].slice(3).map(l => l.textContent.replace('·','').trim());
-
-      if (arkItems.length) {
-        chkY(7); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(24,95,165);
-        doc.text('ARK:', M, y); y+=5;
-        arkItems.forEach(t => { chkY(6); doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60); doc.text(`  · ${t}`, M, y); y+=5; });
-      }
-      if (cliItems.length) {
-        chkY(7); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(15,110,86);
-        doc.text('Client:', M, y); y+=5;
-        cliItems.forEach(t => { chkY(6); doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60); doc.text(`  · ${t}`, M, y); y+=5; });
-      }
-      y+=4;
-    });
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2.5rem 3rem;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
   }
-
-  const memoText = document.getElementById('rm-memo-text')?.textContent;
-  if (memoText) {
-    y+=4; sec('7. Consultant Notes');
-    const ls = doc.splitTextToSize(memoText, cw);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(60,60,60);
-    ls.forEach(l => { chkY(6); doc.text(l, M, y); y+=5; });
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; border-radius: 0; padding: 1.5rem 2rem; }
   }
+</style>
+</head>
+<body>
+<div class="page">
+${rmEl.outerHTML}
+</div>
+</body>
+</html>`;
 
-  chkY(10); y+=4;
-  doc.setDrawColor(210,215,220); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=5;
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(180,180,180);
-  doc.text('Generated by Tridge ARK Export Consulting Tool', M, y);
-
-  const safeName = name.replace(/\s/g,'_').replace(/[^\w가-힣]/g,'') || 'report';
-  doc.save(`ARK_Roadmap_${safeName}_${nowStr()}.pdf`);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `ARK_수출로드맵_${name.replace(/\s/g,'_')}_${date}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
