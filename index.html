@@ -19,15 +19,40 @@
     </div>
     <div class="top-bar-right">
       <span id="meeting-date" class="badge"></span>
-      <button class="btn-icon" id="settings-btn" title="API 키 설정">⚙</button>
+      <span id="provider-badge" class="badge" style="cursor:pointer" onclick="toggleApiBanner()">🤖 Claude</span>
+      <button class="btn-icon" id="settings-btn" title="API 키 설정" onclick="toggleApiBanner()">⚙</button>
     </div>
   </div>
 
-  <!-- API KEY BANNER (shown when key not set) -->
-  <div class="api-banner" id="api-banner">
-    <span>Claude API 키를 입력해야 AI 기능을 사용할 수 있습니다.</span>
-    <input type="password" id="api-key-input" placeholder="sk-ant-..." />
-    <button onclick="saveApiKey()">저장</button>
+  <!-- API KEY BANNER -->
+  <div class="api-banner" id="api-banner" style="display:none">
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;white-space:nowrap">AI 제공사</span>
+        <select id="provider-select" onchange="onProviderChange()"
+          style="font-size:12px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:6px;background:var(--bg-primary);color:var(--text-primary)">
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="gemini">Gemini (Google)</option>
+        </select>
+      </div>
+      <div id="claude-key-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text-secondary);width:90px;flex-shrink:0">Claude API 키</span>
+        <input type="password" id="claude-key-input" placeholder="sk-ant-..."
+          style="flex:1;min-width:180px;font-size:12px;padding:5px 10px;border:0.5px solid var(--border-md);border-radius:6px;background:var(--bg-primary);color:var(--text-primary)" />
+      </div>
+      <div id="gemini-key-row" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text-secondary);width:90px;flex-shrink:0">Gemini API 키</span>
+        <input type="password" id="gemini-key-input" placeholder="AIza..."
+          style="flex:1;min-width:180px;font-size:12px;padding:5px 10px;border:0.5px solid var(--border-md);border-radius:6px;background:var(--bg-primary);color:var(--text-primary)" />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveApiKeys()"
+          style="padding:5px 16px;font-size:12px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer">저장</button>
+        <button onclick="document.getElementById('api-banner').style.display='none'"
+          style="padding:5px 12px;font-size:12px;background:transparent;border:0.5px solid var(--border-md);border-radius:6px;cursor:pointer;color:var(--text-secondary)">닫기</button>
+        <span style="font-size:10px;color:var(--text-tertiary);align-self:center">키는 브라우저에만 저장됩니다</span>
+      </div>
+    </div>
   </div>
 
   <!-- STEP NAV -->
