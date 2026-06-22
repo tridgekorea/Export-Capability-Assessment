@@ -172,22 +172,38 @@ function showRoadmapPdfBtn(fullText, name) {
   document.getElementById('roadmap-output').appendChild(btn);
 }
 
-function downloadRoadmapPdf(fullText, corpName) {
+async function downloadRoadmapPdf(fullText, corpName) {
   if (!window.jspdf) { alert('PDF 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
   const { jsPDF } = window.jspdf;
+
+  // 한글 폰트 로드
+  let nanumRegular = null;
+  try {
+    const r = await fetch('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/NanumGothic.woff').then(r => r.arrayBuffer());
+    nanumRegular = r;
+  } catch(e) { console.warn('폰트 로드 실패:', e); }
+
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  if (nanumRegular) {
+    const toBase64 = (buf) => { let b=''; const bytes=new Uint8Array(buf); for(let i=0;i<bytes.byteLength;i++) b+=String.fromCharCode(bytes[i]); return btoa(b); };
+    doc.addFileToVFS('NanumGothic.ttf', toBase64(nanumRegular));
+    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+    doc.setFont('NanumGothic', 'normal');
+  }
+  const KR = nanumRegular ? 'NanumGothic' : 'helvetica';
   const W = 210, M = 18, cw = W - M * 2;
   let y = 22;
 
   const checkY = (need = 8) => { if (y + need > 275) { doc.addPage(); y = 20; } };
 
   // 헤더
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(KR, 'bold');
   doc.setFontSize(16);
   doc.setTextColor(24, 95, 165);
   doc.text('Tridge ARK — 수출 로드맵', M, y); y += 7;
 
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(KR, 'normal');
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);
   doc.text(`${corpName || '기업명 미입력'}  ·  ${nowStr()}  ·  ARK Export Solution`, M, y); y += 8;
@@ -205,7 +221,7 @@ function downloadRoadmapPdf(fullText, corpName) {
     if (trimmed.startsWith('## ')) {
       checkY(14);
       y += 3;
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(KR, 'bold');
       doc.setFontSize(11);
       doc.setTextColor(24, 95, 165);
       const title = trimmed.replace(/^## /, '');
@@ -216,14 +232,14 @@ function downloadRoadmapPdf(fullText, corpName) {
 
     } else if (trimmed.startsWith('### ')) {
       checkY(10);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont(KR, 'bold');
       doc.setFontSize(10);
       doc.setTextColor(40, 40, 40);
       doc.text(trimmed.replace(/^### /, ''), M, y); y += 6;
 
     } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       checkY(7);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(KR, 'normal');
       doc.setFontSize(9);
       doc.setTextColor(60, 60, 60);
       const content = trimmed.replace(/^[-*] /, '').replace(/\*\*(.+?)\*\*/g, '$1');
@@ -235,7 +251,7 @@ function downloadRoadmapPdf(fullText, corpName) {
 
     } else {
       checkY(7);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(KR, 'normal');
       doc.setFontSize(9);
       doc.setTextColor(60, 60, 60);
       const content = trimmed.replace(/\*\*(.+?)\*\*/g, '$1');
@@ -253,7 +269,7 @@ function downloadRoadmapPdf(fullText, corpName) {
   doc.setDrawColor(210, 215, 220);
   doc.setLineWidth(0.3);
   doc.line(M, y, W - M, y); y += 5;
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(KR, 'normal');
   doc.setFontSize(8);
   doc.setTextColor(180, 180, 180);
   doc.text('본 로드맵은 Tridge ARK 수출역량 상담 도구를 통해 생성되었습니다.', M, y);

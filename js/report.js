@@ -80,10 +80,42 @@ function renderReport() {
     ${conclusion ? `<hr><h3>종합 결론</h3><p style="font-size:12px;line-height:1.8">${conclusion}</p>` : ''}`;
 }
 
-function downloadPdf() {
+async function downloadPdf() {
   if (!window.jspdf) { alert('PDF 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
   const { jsPDF } = window.jspdf;
+
+  // 한글 폰트 로드
+  let nanumRegular = null;
+  let nanumBold = null;
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/NanumGothic.woff').then(r => r.arrayBuffer()),
+      fetch('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/NanumGothicBold.woff').then(r => r.arrayBuffer()),
+    ]);
+    nanumRegular = r1;
+    nanumBold = r2;
+  } catch(e) {
+    console.warn('한글 폰트 로드 실패, 기본 폰트 사용:', e);
+  }
+
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+  // 폰트 등록
+  if (nanumRegular && nanumBold) {
+    const toBase64 = (buf) => {
+      let binary = '';
+      const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    };
+    doc.addFileToVFS('NanumGothic.ttf', toBase64(nanumRegular));
+    doc.addFileToVFS('NanumGothicBold.ttf', toBase64(nanumBold));
+    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+    doc.addFont('NanumGothicBold.ttf', 'NanumGothic', 'bold');
+    doc.setFont('NanumGothic', 'normal');
+  }
+
+  const KR  = nanumRegular ? 'NanumGothic' : 'helvetica';
   const W = 210, M = 18, cw = W - M * 2;
   let y = 22;
 
@@ -104,7 +136,7 @@ function downloadPdf() {
 
   const section = (title) => {
     checkY(14);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(KR, 'bold');
     doc.setFontSize(10);
     doc.setTextColor(24, 95, 165);
     doc.text(title, M, y); y += 4;
@@ -116,11 +148,11 @@ function downloadPdf() {
 
   const row = (label, value) => {
     checkY(7);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(KR, 'bold');
     doc.setFontSize(9);
     doc.setTextColor(110, 110, 110);
     doc.text(label, M, y);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(KR, 'normal');
     doc.setTextColor(40, 40, 40);
     const lines = doc.splitTextToSize(String(value), cw - 42);
     doc.text(lines, M + 40, y);
@@ -128,11 +160,11 @@ function downloadPdf() {
   };
 
   // Header
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
+  doc.setFont(KR, 'bold');
+  doc.setFontSize(16);
   doc.setTextColor(24, 95, 165);
-  doc.text('Export Capability Report', M, y); y += 7;
-  doc.setFont('helvetica', 'normal');
+  doc.text('수출역량 상담 리포트', M, y); y += 7;
+  doc.setFont(KR, 'normal');
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);
   doc.text(`Tridge ARK  |  ${nowStr()}  |  ${name}`, M, y); y += 8;
