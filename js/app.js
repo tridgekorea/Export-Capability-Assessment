@@ -99,4 +99,5 @@ function toggleApiBanner() {
   const banner = document.getElementById('api-banner');
   const isHidden = banner.style.display === 'none' || banner.style.display === '';
   banner.style.display = isHidden ? 'flex' : 'none';
+  if (isHidden) onProviderChange(); // 열릴 때 provider 상태 동기화
 }
