@@ -162,45 +162,45 @@ function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g)
   const pct = (f.rate*100).toFixed(0);
   return `
 <style>
-.rm{font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary)}
+.rm{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;font-size:13px;color:#1a1a18}
 .rm-hdr{padding-bottom:1rem;margin-bottom:1.25rem;border-bottom:2px solid #185FA5}
 .rm-eyebrow{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#185FA5;margin-bottom:.3rem}
 .rm-corp{font-size:18px;font-weight:500;margin-bottom:.2rem}
-.rm-meta{font-size:11px;color:var(--color-text-tertiary)}
+.rm-meta{font-size:11px;color:#9c9a92}
 .rm-grade{display:inline-block;font-size:11px;font-weight:500;padding:3px 12px;border-radius:20px;background:#E1F5EE;color:#0F6E56;margin-top:.4rem}
-.rm-sec{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin:1.5rem 0 .75rem;padding-bottom:.35rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rm-sec{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#9c9a92;margin:1.5rem 0 .75rem;padding-bottom:.35rem;border-bottom:0.5px solid #e0ddd6}
 .rm-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
-.rm-card{background:var(--color-background-secondary);border-radius:8px;padding:.75rem;text-align:center}
+.rm-card{background:#f5f4f0;border-radius:8px;padding:.75rem;text-align:center}
 .rm-card .n{font-size:17px;font-weight:500}
-.rm-card .l{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+.rm-card .l{font-size:10px;color:#9c9a92;margin-top:2px}
 .rm-tl-wrap{overflow-x:auto;margin-bottom:1.5rem}
 .rm-tl{width:100%;border-collapse:collapse;font-size:10px;min-width:540px}
-.rm-tl th,.rm-tl td{border:0.5px solid var(--color-border-tertiary);padding:5px 6px}
+.rm-tl th,.rm-tl td{border:0.5px solid #e0ddd6;padding:5px 6px}
 .rm-tl th{font-weight:500;text-align:center}
 .th-s{background:#EBF3FC;color:#0C447C}
 .th-m{background:#E1F5EE;color:#085041}
 .th-l{background:#FAEEDA;color:#633806}
-.th-a{background:var(--color-background-secondary);color:var(--color-text-secondary);text-align:left;width:72px;font-size:9px}
-.td-a{font-weight:500;font-size:10px;background:var(--color-background-secondary);white-space:nowrap;color:var(--color-text-primary)}
-.td-c{vertical-align:top;color:var(--color-text-secondary);line-height:1.5}
-.td-e{color:var(--color-text-tertiary);font-style:italic;font-size:9px}
+.th-a{background:#f5f4f0;color:#5f5e5a;text-align:left;width:72px;font-size:9px}
+.td-a{font-weight:500;font-size:10px;background:#f5f4f0;white-space:nowrap;color:#1a1a18}
+.td-c{vertical-align:top;color:#5f5e5a;line-height:1.5}
+.td-e{color:#9c9a92;font-style:italic;font-size:9px}
 .td-kpi{font-weight:500;text-align:center}
 .ci{display:flex;align-items:start;gap:4px;margin-bottom:3px;font-size:10px}
 .ci:last-child{margin-bottom:0}
 .cd{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:3px}
 .cd-a{background:#185FA5}.cd-c{background:#1D9E75}
-.rm-leg{display:flex;gap:12px;margin-bottom:.6rem;font-size:10px;color:var(--color-text-secondary)}
+.rm-leg{display:flex;gap:12px;margin-bottom:.6rem;font-size:10px;color:#5f5e5a}
 .rm-leg span{display:flex;align-items:center;gap:4px}
 .rm-leg i{width:8px;height:8px;border-radius:50%;display:inline-block}
 .rm-funnel{display:flex;align-items:center;gap:0;margin-bottom:.5rem}
-.rf-box{flex:1;text-align:center;padding:.6rem .4rem;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary)}
+.rf-box{flex:1;text-align:center;padding:.6rem .4rem;background:#f5f4f0;border:0.5px solid #e0ddd6}
 .rf-box:first-child{border-radius:8px 0 0 8px}
 .rf-box:last-child{border-radius:0 8px 8px 0}
 .rf-box .fn{font-size:16px;font-weight:500;color:#185FA5}
-.rf-box .fl{font-size:9px;color:var(--color-text-tertiary);margin-top:2px}
-.rf-arr{font-size:12px;color:var(--color-text-tertiary);flex-shrink:0;padding:0 3px}
-.rf-note{font-size:10px;color:var(--color-text-tertiary);margin-bottom:1.5rem;text-align:center}
-.rm-phase{border:0.5px solid var(--color-border-tertiary);border-radius:10px;overflow:hidden;margin-bottom:.75rem}
+.rf-box .fl{font-size:9px;color:#9c9a92;margin-top:2px}
+.rf-arr{font-size:12px;color:#9c9a92;flex-shrink:0;padding:0 3px}
+.rf-note{font-size:10px;color:#9c9a92;margin-bottom:1.5rem;text-align:center}
+.rm-phase{border:0.5px solid #e0ddd6;border-radius:10px;overflow:hidden;margin-bottom:.75rem}
 .rm-ph-hd{padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between}
 .rm-ph-hd.ph0{background:#EBF3FC}
 .rm-ph-hd.ph1{background:#E1F5EE}
@@ -209,36 +209,36 @@ function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g)
 .ph0 .rm-ph-title{color:#0C447C}
 .ph1 .rm-ph-title{color:#085041}
 .ph2 .rm-ph-title{color:#633806}
-.rm-ph-kpi{font-size:11px;font-weight:500;color:var(--color-text-primary)}
-.rm-ph-body{padding:.85rem 1rem;background:var(--color-background-primary)}
-.rm-ph-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.75;margin-bottom:.65rem}
+.rm-ph-kpi{font-size:11px;font-weight:500;color:#1a1a18}
+.rm-ph-body{padding:.85rem 1rem;background:#ffffff}
+.rm-ph-desc{font-size:12px;color:#5f5e5a;line-height:1.75;margin-bottom:.65rem}
 .rm-roles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .role-ark{background:#E6F1FB;border:0.5px solid #B5D4F4;border-radius:6px;padding:.6rem .75rem}
-.role-cli{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:.6rem .75rem}
+.role-cli{background:#f5f4f0;border:0.5px solid #e0ddd6;border-radius:6px;padding:.6rem .75rem}
 .role-lbl{font-size:10px;font-weight:500;margin-bottom:.3rem}
 .role-ark .role-lbl{color:#185FA5}
-.role-cli .role-lbl{color:var(--color-text-tertiary)}
+.role-cli .role-lbl{color:#9c9a92}
 .role-list{list-style:none;padding:0}
-.role-list li{font-size:11px;color:var(--color-text-secondary);padding:2px 0 2px 10px;position:relative;line-height:1.5}
+.role-list li{font-size:11px;color:#5f5e5a;padding:2px 0 2px 10px;position:relative;line-height:1.5}
 .role-list li::before{content:'·';position:absolute;left:0}
 .rm-chk{list-style:none;padding:0;margin-bottom:1.5rem}
-.rm-chk li{display:flex;align-items:start;gap:8px;padding:.55rem 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-secondary);line-height:1.55}
+.rm-chk li{display:flex;align-items:start;gap:8px;padding:.55rem 0;border-bottom:0.5px solid #e0ddd6;font-size:11px;color:#5f5e5a;line-height:1.55}
 .rm-chk li:last-child{border-bottom:none}
 .chk-ic{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px}
 .chk-m{background:#FCEBEB;color:#791F1F}
 .chk-g{background:#FAEEDA;color:#633806}
-.chk-bd strong{color:var(--color-text-primary);display:block;margin-bottom:1px}
+.chk-bd strong{color:#1a1a18;display:block;margin-bottom:1px}
 .rm-act{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:1.5rem}
-.rm-act th{background:var(--color-background-secondary);padding:6px 10px;text-align:left;font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary)}
-.rm-act td{padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rm-act th{background:#f5f4f0;padding:6px 10px;text-align:left;font-size:10px;font-weight:500;color:#9c9a92;text-transform:uppercase;letter-spacing:.04em;border-bottom:0.5px solid #e0ddd6}
+.rm-act td{padding:7px 10px;border-bottom:0.5px solid #e0ddd6}
 .rm-act tr:last-child td{border-bottom:none}
 .tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
 .tn{background:#FCEBEB;color:#791F1F}
 .ts2{background:#E6F1FB;color:#0C447C}
 .tm{background:#E1F5EE;color:#085041}
-.rm-memo{background:var(--color-background-secondary);border-radius:8px;padding:.9rem 1rem;border-left:3px solid #185FA5;font-size:11px;color:var(--color-text-secondary);line-height:1.75;margin-top:1rem}
-.rm-memo strong{color:var(--color-text-primary);display:block;margin-bottom:.3rem}
-.ph-loading{font-size:12px;color:var(--color-text-tertiary);padding:1rem;text-align:center}
+.rm-memo{background:#f5f4f0;border-radius:8px;padding:.9rem 1rem;border-left:3px solid #185FA5;font-size:11px;color:#5f5e5a;line-height:1.75;margin-top:1rem}
+.rm-memo strong{color:#1a1a18;display:block;margin-bottom:.3rem}
+.ph-loading{font-size:12px;color:#9c9a92;padding:1rem;text-align:center}
 </style>
 
 <div class="rm">
@@ -365,51 +365,86 @@ function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g)
 
 // ── AI 응답 파싱 → 단계별 카드 렌더링 ───────────────
 function parseAndRenderPhases(text, container) {
-  const phaseColors = ['ph0','ph1','ph2'];
+  const phHdColors = [
+    {bg:'#EBF3FC',color:'#0C447C'},
+    {bg:'#E1F5EE',color:'#085041'},
+    {bg:'#FAEEDA',color:'#633806'},
+  ];
   const phases = [];
   const phaseRegex = /---PHASE_START---([\s\S]*?)---PHASE_END---/g;
   let match;
   while ((match = phaseRegex.exec(text)) !== null) {
-    const block = match[1];
-    const title     = (block.match(/PHASE_TITLE:\s*(.+)/) || [])[1]?.trim() || '';
-    const kpi       = (block.match(/PHASE_KPI:\s*(.+)/)   || [])[1]?.trim() || '';
-    const desc      = (block.match(/PHASE_DESC:\s*([\s\S]*?)(?=---ARK_START---|$)/) || [])[1]?.trim() || '';
-    const arkBlock  = (block.match(/---ARK_START---([\s\S]*?)---ARK_END---/)    || [])[1]?.trim() || '';
-    const cliBlock  = (block.match(/---CLIENT_START---([\s\S]*?)---CLIENT_END---/) || [])[1]?.trim() || '';
-    const arkItems  = arkBlock.split('\n').map(l=>l.replace(/^[-*·]\s*/,'')).filter(Boolean);
-    const cliItems  = cliBlock.split('\n').map(l=>l.replace(/^[-*·]\s*/,'')).filter(Boolean);
-    phases.push({ title, kpi, desc, arkItems, cliItems });
+    const block    = match[1];
+    const title    = (block.match(/PHASE_TITLE:\s*(.+)/) || [])[1]?.trim() || '';
+    const kpi      = (block.match(/PHASE_KPI:\s*(.+)/)   || [])[1]?.trim() || '';
+    const desc     = (block.match(/PHASE_DESC:\s*([\s\S]*?)(?=---ARK_START---|$)/) || [])[1]?.trim() || '';
+    const arkBlock = (block.match(/---ARK_START---([\s\S]*?)---ARK_END---/)    || [])[1]?.trim() || '';
+    const cliBlock = (block.match(/---CLIENT_START---([\s\S]*?)---CLIENT_END---/) || [])[1]?.trim() || '';
+    const arkItems = arkBlock.split('\n').map(l=>l.replace(/^[-*·\d\.]+\s*/,'')).filter(Boolean);
+    const cliItems = cliBlock.split('\n').map(l=>l.replace(/^[-*·\d\.]+\s*/,'')).filter(Boolean);
+
+    // 고객사 실행 항목에서 표 형식 파싱 (항목|행동|기한)
+    const cliTable = cliItems.map(item => {
+      const parts = item.split('|').map(s=>s.trim());
+      if (parts.length >= 3) return { label: parts[0], action: parts[1], due: parts[2] };
+      const colonIdx = item.indexOf(':');
+      if (colonIdx > 0) return { label: item.slice(0,colonIdx).trim(), action: item.slice(colonIdx+1).trim(), due:'' };
+      return { label:'', action: item, due:'' };
+    });
+
+    phases.push({ title, kpi, desc, arkItems, cliItems, cliTable });
   }
 
   if (phases.length === 0) {
-    container.innerHTML = '<div class="ph-loading"><span class="spinner"></span> 분석 중...</div>';
+    container.innerHTML = '<div style="font-size:12px;color:#9c9a92;padding:1rem;text-align:center"><span class="spinner"></span> 분석 중...</div>';
     return;
   }
 
-  container.innerHTML = phases.map((p, i) => `
-    <div class="rm-phase">
-      <div class="rm-ph-hd ${phaseColors[i]||'ph0'}">
-        <span class="rm-ph-title">${p.title}</span>
-        <span class="rm-ph-kpi">${p.kpi}</span>
+  container.innerHTML = phases.map((p, i) => {
+    const hd = phHdColors[i] || phHdColors[0];
+    const hasTable = p.cliTable.some(r => r.due);
+
+    const cliContent = hasTable ? `
+      <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:.4rem">
+        <tr>
+          <th style="background:#f5f4f0;padding:5px 8px;text-align:left;font-size:10px;font-weight:500;color:#9c9a92;border:0.5px solid #e0ddd6">준비 항목</th>
+          <th style="background:#f5f4f0;padding:5px 8px;text-align:left;font-size:10px;font-weight:500;color:#9c9a92;border:0.5px solid #e0ddd6">구체적 행동</th>
+          <th style="background:#f5f4f0;padding:5px 8px;text-align:left;font-size:10px;font-weight:500;color:#9c9a92;border:0.5px solid #e0ddd6;width:60px">기한</th>
+        </tr>
+        ${p.cliTable.map(r=>`
+        <tr>
+          <td style="padding:5px 8px;border:0.5px solid #e0ddd6;color:#1a1a18;font-weight:500">${r.label||'-'}</td>
+          <td style="padding:5px 8px;border:0.5px solid #e0ddd6;color:#5f5e5a">${r.action}</td>
+          <td style="padding:5px 8px;border:0.5px solid #e0ddd6;color:#5f5e5a;white-space:nowrap">${r.due||'-'}</td>
+        </tr>`).join('')}
+      </table>` : `
+      <ul style="list-style:none;padding:0">
+        ${p.cliItems.map(t=>`<li style="font-size:11px;color:#5f5e5a;padding:2px 0 2px 10px;position:relative;line-height:1.5"><span style="position:absolute;left:0">·</span>${t}</li>`).join('')}
+      </ul>`;
+
+    return `
+    <div style="border:0.5px solid #e0ddd6;border-radius:10px;overflow:hidden;margin-bottom:.75rem">
+      <div style="padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;background:${hd.bg}">
+        <span style="font-size:12px;font-weight:500;color:${hd.color}">${p.title}</span>
+        <span style="font-size:11px;font-weight:500;color:#1a1a18">${p.kpi}</span>
       </div>
-      <div class="rm-ph-body">
-        <p class="rm-ph-desc">${p.desc}</p>
-        <div class="rm-roles">
-          <div class="role-ark">
-            <div class="role-lbl">ARK 대행</div>
-            <ul class="role-list">
-              ${p.arkItems.map(t=>`<li>${t}</li>`).join('')}
+      <div style="padding:.85rem 1rem;background:#ffffff">
+        <p style="font-size:12px;color:#5f5e5a;line-height:1.75;margin-bottom:.65rem">${p.desc}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#E6F1FB;border:0.5px solid #B5D4F4;border-radius:6px;padding:.6rem .75rem">
+            <div style="font-size:10px;font-weight:500;color:#185FA5;margin-bottom:.3rem">ARK 대행</div>
+            <ul style="list-style:none;padding:0">
+              ${p.arkItems.map(t=>`<li style="font-size:11px;color:#5f5e5a;padding:2px 0 2px 10px;position:relative;line-height:1.5"><span style="position:absolute;left:0">·</span>${t}</li>`).join('')}
             </ul>
           </div>
-          <div class="role-cli">
-            <div class="role-lbl">고객사 실행</div>
-            <ul class="role-list">
-              ${p.cliItems.map(t=>`<li>${t}</li>`).join('')}
-            </ul>
+          <div style="background:#f5f4f0;border:0.5px solid #e0ddd6;border-radius:6px;padding:.6rem .75rem">
+            <div style="font-size:10px;font-weight:500;color:#9c9a92;margin-bottom:.3rem">고객사 실행</div>
+            ${cliContent}
           </div>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── PDF 버튼 추가 ─────────────────────────────────────
@@ -418,8 +453,7 @@ function addRoadmapPdfBtn(container) {
   if (existing) existing.remove();
   const btn = document.createElement('button');
   btn.id = 'roadmap-pdf-btn';
-  btn.className = 'btn-pdf';
-  btn.style.marginTop = '1rem';
+  btn.style.cssText = 'display:block;width:100%;margin-top:1rem;padding:11px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
   btn.textContent = '⬇ 로드맵 PDF 다운로드';
   btn.onclick = downloadRoadmapPdf;
   container.appendChild(btn);
