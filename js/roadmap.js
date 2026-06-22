@@ -142,10 +142,7 @@ ARK 담당자 핵심 메모: 가장 중요한 병목 1가지와 해결 방향 2~
   }
 }
 
-function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g) {
-  const pct = (f.rate*100).toFixed(0);
-  return `
-<style>
+const ROADMAP_CSS = `
 .rm{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;font-size:13px;color:#1a1a18}
 .rm-hdr{padding-bottom:1rem;margin-bottom:1.25rem;border-bottom:2px solid #185FA5}
 .rm-eyebrow{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#185FA5;margin-bottom:.3rem}
@@ -200,7 +197,12 @@ function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g)
 .tm{background:#E1F5EE;color:#085041}
 .rm-memo{background:#f5f4f0;border-radius:8px;padding:.9rem 1rem;border-left:3px solid #185FA5;font-size:11px;color:#5f5e5a;line-height:1.75;margin-top:1rem}
 .rm-memo strong{color:#1a1a18;display:block;margin-bottom:.3rem}
-</style>
+`;
+
+function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g) {
+  const pct = (f.rate*100).toFixed(0);
+  return `
+<style>${ROADMAP_CSS}</style>
 <div class="rm">
   <div class="rm-hdr">
     <div class="rm-eyebrow">AI 수출 로드맵 · Tridge ARK</div>
@@ -393,6 +395,8 @@ function addRoadmapHtmlBtn(container) {
 function downloadRoadmapHtml() {
   const rmEl = document.querySelector('.rm');
   if (!rmEl) { alert('로드맵을 먼저 생성해주세요.'); return; }
+  // outerHTML에서 내부 <style> 태그 제거 (CSS는 head에 별도 삽입)
+  const cleanHtml = rmEl.outerHTML.replace(/<style[\s\S]*?<\/style>/gi, '');
 
   const name = getField('f-name') || '기업명';
   const date = nowStr();
@@ -424,11 +428,12 @@ function downloadRoadmapHtml() {
     body { background: #fff; padding: 0; }
     .page { box-shadow: none; border-radius: 0; padding: 1.5rem 2rem; }
   }
+  ${ROADMAP_CSS}
 </style>
 </head>
 <body>
 <div class="page">
-${rmEl.outerHTML}
+${cleanHtml}
 </div>
 </body>
 </html>`;
