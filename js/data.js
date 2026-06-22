@@ -88,9 +88,18 @@ function updateProviderBadge() {
 }
 
 function onProviderChange() {
-  const p = document.getElementById('provider-select').value;
-  document.getElementById('claude-key-row').style.display = p === 'claude' ? 'flex' : 'none';
-  document.getElementById('gemini-key-row').style.display = p === 'gemini' ? 'flex' : 'none';
+  const p = document.getElementById('provider-select')?.value || getProvider();
+  const claudeRow = document.getElementById('claude-key-row');
+  const geminiRow = document.getElementById('gemini-key-row');
+  if (!claudeRow || !geminiRow) return;
+
+  if (p === 'gemini') {
+    claudeRow.style.display = 'none';
+    geminiRow.style.display = 'flex';
+  } else {
+    claudeRow.style.display = 'flex';
+    geminiRow.style.display = 'none';
+  }
 }
 
 // ── 통합 AI 호출 ──────────────────────────────────────
@@ -107,25 +116,41 @@ async function callClaudeAPI(systemPrompt, userPrompt, onChunk) {
   const key = getClaudeKey();
   if (!key) { alert('Claude API 키를 먼저 입력해주세요. (상단 ⚙ 버튼)'); return null; }
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2000,
-      stream: !!onChunk,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
-  });
+  let res;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        stream: !!onChunk,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+  } catch (networkErr) {
+    throw new Error(`네트워크 오류: ${networkErr.message} — 인터넷 연결 또는 API 키를 확인하세요.`);
+  }
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Claude API 오류 (${res.status})`);
+    let errMsg = `HTTP ${res.status}`;
+    try {
+      const errBody = await res.json();
+      const detail = errBody?.error?.message || JSON.stringify(errBody);
+      errMsg = `[${res.status}] ${detail}`;
+    } catch {}
+    // 상태코드별 한국어 안내
+    if (res.status === 401) throw new Error(`인증 실패 (401) — API 키가 올바른지 확인하세요.`);
+    if (res.status === 403) throw new Error(`접근 거부 (403) — API 키 권한을 확인하세요.`);
+    if (res.status === 429) throw new Error(`요청 한도 초과 (429) — 잠시 후 다시 시도하세요.`);
+    if (res.status === 500) throw new Error(`Anthropic 서버 오류 (500) — 잠시 후 다시 시도하세요.`);
+    if (res.status === 529) throw new Error(`API 과부하 (529) — 잠시 후 다시 시도하세요.`);
+    throw new Error(errMsg);
   }
 
   if (!onChunk) {
