@@ -47,6 +47,16 @@
     <button onclick="toggleApiBanner()"
       style="padding:5px 12px;font-size:12px;background:transparent;border:0.5px solid #ccc;border-radius:6px;cursor:pointer;color:#854F0B">닫기</button>
     <span style="font-size:10px;color:#9c9a92">키는 브라우저에만 저장됩니다</span>
+    <div style="width:100%;display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:0.5px solid #E5A020;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:700;color:#854F0B;white-space:nowrap">컨설턴트명</span>
+      <input type="text" id="consultant-name-input" placeholder="홍길동"
+        style="font-size:12px;padding:5px 10px;border:0.5px solid #ccc;border-radius:6px;width:110px" />
+      <span style="font-size:12px;font-weight:700;color:#854F0B;white-space:nowrap;margin-left:8px">📊 구글시트 웹훅 URL</span>
+      <input type="text" id="sheets-url-input" placeholder="https://script.google.com/macros/s/..."
+        style="flex:1;min-width:200px;font-size:12px;padding:5px 10px;border:0.5px solid #ccc;border-radius:6px" />
+      <button onclick="saveSettingsAll()"
+        style="padding:5px 16px;font-size:12px;font-weight:700;background:#1D9E75;color:#fff;border:none;border-radius:6px;cursor:pointer">저장</button>
+    </div>
   </div>
 
   <!-- STEP NAV -->
@@ -69,7 +79,19 @@
 
     <div class="grid-2">
       <div class="field"><label>기업명</label><input id="f-name" placeholder="주식회사 OOO" /></div>
-      <div class="field"><label>담당자 / 직책</label><input id="f-contact" placeholder="홍길동 / 수출팀장" /></div>
+      <div class="field"><label>법인 등록명 <span class="label-hint">(Legal name)</span></label><input id="f-legal-name" placeholder="주식회사 OOO" /></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>담당자명 *</label><input id="f-contact-name" placeholder="홍길동" /></div>
+      <div class="field"><label>직책</label><input id="f-contact-title" placeholder="수출팀장" /></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>이메일 *</label><input id="f-contact-email" type="email" placeholder="export@company.com" /></div>
+      <div class="field"><label>전화 / WhatsApp</label><input id="f-contact-phone" placeholder="+82-10-0000-0000" /></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>웹사이트</label><input id="f-website" placeholder="https://www.example.com" /></div>
+      <div class="field"><label>HS Code <span class="label-hint">(알고 있는 경우)</span></label><input id="f-hscode" placeholder="예: 1904.10" /></div>
     </div>
     <div class="grid-3">
       <div class="field">
@@ -194,6 +216,12 @@
     <p class="sec-label" style="margin-top:1.5rem">리포트 미리보기</p>
     <div class="report-preview" id="report-preview"></div>
 
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e0ddd6">
+      <p class="sec-label">구글시트 저장</p>
+      <div id="sheets-status" style="display:none;padding:.6rem 1rem;border-radius:6px;font-size:12px;margin-bottom:.75rem"></div>
+      <button id="sheets-save-btn" class="btn-primary" style="background:#1D9E75;margin-bottom:.5rem" onclick="saveToSheets()">📊 구글시트에 저장 (파이프라인 등록)</button>
+      <p style="font-size:11px;color:#9c9a92;margin-top:.25rem">저장 시 기업정보·진단결과·연락처·액션아이템이 팀 구글시트에 자동 기록됩니다</p>
+    </div>
     <button class="btn-outline" onclick="goStep(4)">수출 로드맵 생성하기 →</button>
   </section>
 
@@ -215,6 +243,25 @@
 <script src="js/result.js?v=20260622"></script>
 <script src="js/report.js?v=20260622"></script>
 <script src="js/roadmap.js?v=20260622"></script>
+<script src="js/sheets.js?v=20260622"></script>
 <script src="js/app.js?v=20260622"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var url = localStorage.getItem('ark_sheets_webhook_url') || '';
+  var name = localStorage.getItem('ark_consultant_name') || '';
+  var ui = document.getElementById('sheets-url-input');
+  var ni = document.getElementById('consultant-name-input');
+  if (ui) ui.value = url;
+  if (ni) ni.value = name;
+});
+function saveSettingsAll() {
+  var url = document.getElementById('sheets-url-input').value.trim();
+  var name = document.getElementById('consultant-name-input').value.trim();
+  if (url) localStorage.setItem('ark_sheets_webhook_url', url);
+  if (name) localStorage.setItem('ark_consultant_name', name);
+  saveApiKeys();
+  alert('설정이 저장되었습니다!');
+}
+</script>
 </body>
 </html>
