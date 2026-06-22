@@ -1,4 +1,4 @@
-// js/data.js — 진단 항목 정의
+// js/data.js — 진단 항목 정의 + API 설정 (Claude / Gemini)
 
 const DIAG_ITEMS = [
   { id:'target',    area:'제품역량',    color:'#1D9E75', q:'핵심 타깃 고객이 구체적으로 정의되어 있다',           hint:'타깃 명확성' },
@@ -21,11 +21,12 @@ const STATE = {
   areaScores: {},
   overallAvg: 0,
   todos: [
-    { text: 'ARK에서 목표시장 바이어 리스트 추출', owner: 'ARK담당자', due: '1주일' },
+    { text: 'ARK 아웃리치 대상 국가·HS코드 확정', owner: 'ARK담당자', due: '1주일' },
     { text: '현지 인증 필요 항목 확인 및 준비 일정 공유', owner: '고객사', due: '2주일' },
   ],
 };
 
+// ── 유틸 ──────────────────────────────────────────────
 function getField(id) {
   const el = document.getElementById(id);
   return el ? el.value : '';
@@ -47,24 +48,64 @@ function nowStr() {
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function getApiKey() {
-  return localStorage.getItem('ark_api_key') || '';
+// ── API 키 관리 ───────────────────────────────────────
+function getProvider() {
+  return localStorage.getItem('ark_provider') || 'claude'; // 'claude' | 'gemini'
 }
 
-function saveApiKey() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key) { alert('API 키를 입력해주세요.'); return; }
-  localStorage.setItem('ark_api_key', key);
+function getClaudeKey() {
+  return localStorage.getItem('ark_claude_key') || '';
+}
+
+function getGeminiKey() {
+  return localStorage.getItem('ark_gemini_key') || '';
+}
+
+function saveApiKeys() {
+  const provider  = document.getElementById('provider-select').value;
+  const claudeKey = document.getElementById('claude-key-input').value.trim();
+  const geminiKey = document.getElementById('gemini-key-input').value.trim();
+
+  if (provider === 'claude' && !claudeKey) { alert('Claude API 키를 입력해주세요.'); return; }
+  if (provider === 'gemini' && !geminiKey) { alert('Gemini API 키를 입력해주세요.'); return; }
+
+  localStorage.setItem('ark_provider', provider);
+  if (claudeKey) localStorage.setItem('ark_claude_key', claudeKey);
+  if (geminiKey) localStorage.setItem('ark_gemini_key', geminiKey);
+
   document.getElementById('api-banner').style.display = 'none';
-  alert('API 키가 저장되었습니다.');
+  updateProviderBadge();
+  alert(`${provider === 'claude' ? 'Claude' : 'Gemini'} API 키가 저장되었습니다.`);
 }
 
+function updateProviderBadge() {
+  const badge = document.getElementById('provider-badge');
+  if (!badge) return;
+  const p = getProvider();
+  badge.textContent  = p === 'claude' ? '🤖 Claude' : '✨ Gemini';
+  badge.style.background = p === 'claude' ? '#E6F1FB' : '#E8F5E9';
+  badge.style.color  = p === 'claude' ? '#185FA5' : '#1B5E20';
+}
+
+function onProviderChange() {
+  const p = document.getElementById('provider-select').value;
+  document.getElementById('claude-key-row').style.display = p === 'claude' ? 'flex' : 'none';
+  document.getElementById('gemini-key-row').style.display = p === 'gemini' ? 'flex' : 'none';
+}
+
+// ── 통합 AI 호출 ──────────────────────────────────────
 async function callClaude(systemPrompt, userPrompt, onChunk) {
-  const key = getApiKey();
-  if (!key) {
-    alert('API 키를 먼저 입력해주세요. (상단 ⚙ 버튼)');
-    return null;
+  const provider = getProvider();
+  if (provider === 'gemini') {
+    return callGemini(systemPrompt, userPrompt, onChunk);
   }
+  return callClaudeAPI(systemPrompt, userPrompt, onChunk);
+}
+
+// Claude API 호출
+async function callClaudeAPI(systemPrompt, userPrompt, onChunk) {
+  const key = getClaudeKey();
+  if (!key) { alert('Claude API 키를 먼저 입력해주세요. (상단 ⚙ 버튼)'); return null; }
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -84,7 +125,7 @@ async function callClaude(systemPrompt, userPrompt, onChunk) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API 오류 (${res.status})`);
+    throw new Error(err?.error?.message || `Claude API 오류 (${res.status})`);
   }
 
   if (!onChunk) {
@@ -93,7 +134,7 @@ async function callClaude(systemPrompt, userPrompt, onChunk) {
   }
 
   // Streaming
-  const reader = res.body.getReader();
+  const reader  = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
   while (true) {
@@ -111,6 +152,58 @@ async function callClaude(systemPrompt, userPrompt, onChunk) {
         if (evt.type === 'content_block_delta' && evt.delta?.text) {
           onChunk(evt.delta.text);
         }
+      } catch {}
+    }
+  }
+}
+
+// Gemini API 호출 (gemini-2.0-flash)
+async function callGemini(systemPrompt, userPrompt, onChunk) {
+  const key = getGeminiKey();
+  if (!key) { alert('Gemini API 키를 먼저 입력해주세요. (상단 ⚙ 버튼)'); return null; }
+
+  const model = 'gemini-2.0-flash';
+  const url   = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${onChunk ? 'streamGenerateContent' : 'generateContent'}?key=${key}${onChunk ? '&alt=sse' : ''}`;
+
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+    generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+  };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Gemini API 오류 (${res.status})`);
+  }
+
+  if (!onChunk) {
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  // Streaming
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const json = line.slice(5).trim();
+      try {
+        const evt = JSON.parse(json);
+        const text = evt.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) onChunk(text);
       } catch {}
     }
   }

@@ -4,16 +4,23 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('meeting-date').textContent = nowStr() + ' 미팅';
 
-  // API 키 저장 여부 확인
-  if (getApiKey()) {
-    document.getElementById('api-banner').style.display = 'none';
-  }
+  // 저장된 키 복원
+  const savedProvider = getProvider();
+  const providerSelect = document.getElementById('provider-select');
+  if (providerSelect) providerSelect.value = savedProvider;
 
-  // 설정 버튼
-  document.getElementById('settings-btn').addEventListener('click', () => {
-    const banner = document.getElementById('api-banner');
-    banner.style.display = banner.style.display === 'none' ? 'flex' : 'none';
-  });
+  const claudeKey = getClaudeKey();
+  const geminiKey = getGeminiKey();
+  if (claudeKey) document.getElementById('claude-key-input').value = claudeKey;
+  if (geminiKey) document.getElementById('gemini-key-input').value = geminiKey;
+
+  // 초기 배너 상태
+  const hasKey = savedProvider === 'claude' ? !!claudeKey : !!geminiKey;
+  if (!hasKey) {
+    document.getElementById('api-banner').style.display = 'flex';
+  }
+  onProviderChange();
+  updateProviderBadge();
 
   buildDiag();
   renderTodos();
@@ -85,4 +92,11 @@ async function aiResearch() {
   } finally {
     btn.disabled = false;
   }
+}
+
+// ── API 배너 토글 ────────────────────────────────────
+function toggleApiBanner() {
+  const banner = document.getElementById('api-banner');
+  const isHidden = banner.style.display === 'none' || banner.style.display === '';
+  banner.style.display = isHidden ? 'flex' : 'none';
 }
