@@ -138,25 +138,13 @@ function downloadPdf() {
     @media print { body { background:#fff; padding:0; } .page { box-shadow:none; border-radius:0; padding:1.5rem 2rem; } }
   `;
 
-  const html = \`<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>ARK 수출역량 상담 리포트 · \${name}</title>
-<style>\${REPORT_CSS}</style>
-</head>
-<body>
-<div class="page">
-\${previewEl.innerHTML}
-</div>
-</body>
-</html>\`;
+  const html = '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8">\n<title>ARK 수출역량 상담 리포트 · ' + name + '</title>\n<style>' + REPORT_CSS + '</style>\n</head>\n<body>\n<div class="page">\n' + previewEl.innerHTML + '\n</div>\n</body>\n</html>';
 
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = \`ARK_수출역량리포트_\${name.replace(/\s/g,'_')}_\${nowStr()}.html\`;
+  a.download = 'ARK_수출역량리포트_' + name.replace(/\s/g,'_') + '_' + nowStr() + '.html';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
