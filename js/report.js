@@ -110,7 +110,12 @@ function renderReport() {
       <tr><td style="width:50%;font-weight:600">할 일</td><td style="width:25%;font-weight:600">담당</td><td style="width:25%;font-weight:600">기한</td></tr>
       ${todos.map(t => `<tr><td>${t.text||'-'}</td><td>${t.owner||'-'}</td><td>${t.due}</td></tr>`).join('')}
     </table>
-    ${conclusion ? `<hr><h3>종합 결론</h3><p style="font-size:12px;line-height:1.8">${conclusion}</p>` : ''}`;
+    <hr>
+    <h3>6. 미팅 결론 및 종합 메모</h3>
+    <table>
+      <tr><td style="width:25%;font-weight:600;vertical-align:top">미팅 특이사항</td><td style="font-size:12px;line-height:1.8">${meetmemo !== '-' ? meetmemo : '없음'}</td></tr>
+      <tr><td style="width:25%;font-weight:600;vertical-align:top">종합 결론</td><td style="font-size:12px;line-height:1.8">${conclusion || '미입력'}</td></tr>
+    </table>`;
 }
 
 async function downloadPdf() {
@@ -266,6 +271,14 @@ async function downloadPdf() {
     doc.text(cl, M, y);
     y += cl.length * 5 + 4;
   }
+
+  // 6. 미팅 결론 및 종합 메모
+  y += 4; section('6. 미팅 결론 및 종합 메모');
+  row('미팅 특이사항', doc.splitTextToSize(meetmemo !== '-' ? meetmemo : '없음', cw - 42).join(' '));
+  if (conclusion) {
+    row('종합 결론', doc.splitTextToSize(conclusion, cw - 42).join(' '));
+  }
+  y += 4;
 
   checkY(10);
   doc.setDrawColor(210, 215, 220);
