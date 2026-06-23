@@ -20,6 +20,7 @@
     <div class="top-bar-right">
       <span id="meeting-date" class="badge"></span>
       <span id="provider-badge" class="badge" style="cursor:pointer" onclick="toggleApiBanner()">🤖 Claude</span>
+      <button class="btn-icon" title="상담 히스토리" onclick="openHistoryPanel()" style="margin-right:4px">📋</button>
       <button class="btn-icon" id="settings-btn" title="API 키 설정" onclick="toggleApiBanner()">⚙</button>
     </div>
   </div>
@@ -149,7 +150,7 @@
     <div class="grid-3">
       <div class="field">
         <label>목표 시장 1순위</label>
-        <select id="f-market1">
+        <select id="f-market1" onchange="toggleMarketInput('f-market1')">
           <option value="">선택</option>
           <option>미국/캐나다</option>
           <option>일본</option>
@@ -158,11 +159,13 @@
           <option>유럽</option>
           <option>중동</option>
           <option>호주</option>
+          <option value="직접입력">직접입력</option>
         </select>
+        <input type="text" id="f-market1-custom" placeholder="시장명 직접 입력" style="display:none;margin-top:4px;width:100%;padding:7px 10px;border:1px solid #d0cec8;border-radius:6px;font-size:12px" />
       </div>
       <div class="field">
         <label>목표 시장 2순위</label>
-        <select id="f-market2">
+        <select id="f-market2" onchange="toggleMarketInput('f-market2')">
           <option value="">선택</option>
           <option>미국/캐나다</option>
           <option>일본</option>
@@ -171,11 +174,13 @@
           <option>유럽</option>
           <option>중동</option>
           <option>호주</option>
+          <option value="직접입력">직접입력</option>
         </select>
+        <input type="text" id="f-market2-custom" placeholder="시장명 직접 입력" style="display:none;margin-top:4px;width:100%;padding:7px 10px;border:1px solid #d0cec8;border-radius:6px;font-size:12px" />
       </div>
       <div class="field">
         <label>목표 시장 3순위</label>
-        <select id="f-market3">
+        <select id="f-market3" onchange="toggleMarketInput('f-market3')">
           <option value="">선택</option>
           <option>미국/캐나다</option>
           <option>일본</option>
@@ -184,7 +189,9 @@
           <option>유럽</option>
           <option>중동</option>
           <option>호주</option>
+          <option value="직접입력">직접입력</option>
         </select>
+        <input type="text" id="f-market3-custom" placeholder="시장명 직접 입력" style="display:none;margin-top:4px;width:100%;padding:7px 10px;border:1px solid #d0cec8;border-radius:6px;font-size:12px" />
       </div>
     </div>
     <div class="grid-2">
@@ -281,6 +288,19 @@
     <div id="roadmap-output"></div>
   </section>
 
+<!-- 히스토리 사이드패널 -->
+<div id="history-panel" style="display:none;position:fixed;top:0;right:0;width:360px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:1000;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif">
+  <div style="padding:16px 20px;background:#185FA5;color:#fff;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:14px;font-weight:600">📋 상담 히스토리</span>
+    <button onclick="closeHistoryPanel()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
+  </div>
+  <div style="padding:12px 16px;background:#EBF3FC;border-bottom:1px solid #d0cec8">
+    <p style="font-size:11px;color:#185FA5;margin-bottom:8px">고객사를 선택하면 온보딩 폼을 발송할 수 있어요</p>
+  </div>
+  <div id="history-list" style="padding:8px"></div>
+</div>
+<div id="history-overlay" onclick="closeHistoryPanel()" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:999"></div>
+
 </div><!-- .app -->
 
 <script src="js/data.js?v=20260622"></script>
@@ -302,6 +322,96 @@ document.addEventListener('DOMContentLoaded', function() {
   if (ni) ni.value = name;
   if (fi) fi.value = formUrl;
 });
+function toggleMarketInput(selectId) {
+  const sel = document.getElementById(selectId);
+  const input = document.getElementById(selectId + '-custom');
+  if (!input) return;
+  input.style.display = sel.value === '직접입력' ? 'block' : 'none';
+}
+
+function getMarketValue(id) {
+  const sel = document.getElementById(id);
+  if (!sel) return '';
+  if (sel.value === '직접입력') {
+    return document.getElementById(id + '-custom')?.value || '';
+  }
+  return sel.value || '';
+}
+
+async function openHistoryPanel() {
+  const panel = document.getElementById('history-panel');
+  const overlay = document.getElementById('history-overlay');
+  const listEl = document.getElementById('history-list');
+  panel.style.display = 'block';
+  overlay.style.display = 'block';
+  listEl.innerHTML = '<p style="padding:20px;color:#9c9a92;font-size:12px;text-align:center">불러오는 중...</p>';
+
+  const url = getSheetsUrl();
+  if (!url) {
+    listEl.innerHTML = '<p style="padding:20px;color:#E24B4A;font-size:12px">구글시트 웹훅 URL을 먼저 설정해주세요</p>';
+    return;
+  }
+
+  try {
+    const res = await fetch(url + '?action=list');
+    const json = await res.json();
+    if (!json.list || json.list.length === 0) {
+      listEl.innerHTML = '<p style="padding:20px;color:#9c9a92;font-size:12px;text-align:center">저장된 상담 기록이 없습니다</p>';
+      return;
+    }
+    listEl.innerHTML = json.list.map(r => `
+      <div style="padding:12px;border-bottom:1px solid #f0ede8">
+        <div style="font-size:13px;font-weight:500;color:#1a1a18;margin-bottom:2px">${r.기업명 || '-'}</div>
+        <div style="font-size:11px;color:#9c9a92;margin-bottom:6px">${r.날짜 || ''} · ${r.컨설턴트 || ''} · <span style="color:#185FA5;font-weight:500">${r.상태 || ''}</span></div>
+        <div style="font-size:11px;color:#5f5e5a;margin-bottom:8px">${r['주요 품목'] || ''} · ${r['목표시장 1순위'] || r['목표 시장'] || ''}</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="sendFormFromHistory('${r.기업명}','${r.이메일}','${r.담당자명}')"
+            style="flex:1;padding:5px;font-size:11px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer">
+            📧 온보딩 폼 발송
+          </button>
+          <button onclick="loadHistoryRecord('${r.기업명}')"
+            style="flex:1;padding:5px;font-size:11px;font-weight:600;background:#f5f4f0;color:#1a1a18;border:1px solid #d0cec8;border-radius:6px;cursor:pointer">
+            불러오기
+          </button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = '<p style="padding:20px;color:#E24B4A;font-size:12px">불러오기 실패 — 웹훅 URL을 확인해주세요</p>';
+  }
+}
+
+function closeHistoryPanel() {
+  document.getElementById('history-panel').style.display = 'none';
+  document.getElementById('history-overlay').style.display = 'none';
+}
+
+function sendFormFromHistory(companyName, email, contactName) {
+  const formUrl = localStorage.getItem('ark_onboarding_form_url') || '';
+  if (!formUrl) {
+    alert('온보딩 폼 URL이 설정되지 않았습니다.\n⚙ 설정에서 폼 URL을 입력해주세요.');
+    return;
+  }
+  if (!email) {
+    alert(`${companyName}의 이메일 정보가 없습니다.`);
+    return;
+  }
+  const subject = encodeURIComponent(`[Tridge ARK] ${companyName} — Seller Onboarding Form 작성 요청`);
+  const body = encodeURIComponent(`${contactName}님 안녕하세요,\n\nSeller Onboarding Form 작성 부탁드립니다.\n\n${formUrl}\n\n감사합니다.\nTridge ARK 팀`);
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${subject}&body=${body}`;
+  const a = document.createElement('a');
+  a.href = gmailUrl; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+async function loadHistoryRecord(companyName) {
+  const data = await loadFromSheets(companyName);
+  if (data) {
+    fillFormFromSheets(data);
+    closeHistoryPanel();
+    goStep(0);
+  }
+}
+
 function saveSettingsAll() {
   var url = document.getElementById('sheets-url-input').value.trim();
   var name = document.getElementById('consultant-name-input').value.trim();
