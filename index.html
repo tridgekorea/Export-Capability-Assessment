@@ -252,7 +252,10 @@
   <section class="panel" id="p3">
     <p class="sec-label">다음 액션 아이템</p>
     <div id="todo-list"></div>
-    <button class="btn-link" onclick="addTodo()">+ 항목 추가</button>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+      <button class="btn-link" onclick="addTodo()">+ 항목 추가</button>
+      <button onclick="renderReport()" style="padding:4px 14px;font-size:12px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer">✓ 적용</button>
+    </div>
 
     <div class="field" style="margin-top:1.5rem">
       <label>미팅 결론 / 종합 메모</label>
@@ -262,12 +265,12 @@
     <p class="sec-label" style="margin-top:1.5rem">리포트 미리보기</p>
     <div class="report-preview" id="report-preview"></div>
 
-    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e0ddd6">
-      <p class="sec-label">구글시트 저장</p>
-      <div id="sheets-status" style="display:none;padding:.6rem 1rem;border-radius:6px;font-size:12px;margin-bottom:.75rem"></div>
-      <button id="sheets-save-btn" class="btn-primary" style="background:#1D9E75;margin-bottom:.5rem" onclick="saveToSheets()">📊 구글시트에 저장 (파이프라인 등록)</button>
-      <p style="font-size:11px;color:#9c9a92;margin-top:.25rem">저장 시 기업정보·진단결과·연락처·액션아이템이 팀 구글시트에 자동 기록됩니다</p>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e0ddd6;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="downloadPdf()" style="flex:1;min-width:160px">⬇ PDF 다운로드</button>
+      <button id="sheets-save-btn" class="btn-primary" style="flex:1;min-width:160px;background:#1D9E75" onclick="saveToSheets()">📊 구글시트에 저장</button>
     </div>
+    <div id="sheets-status" style="display:none;padding:.6rem 1rem;border-radius:6px;font-size:12px;margin-top:.5rem"></div>
+    <p style="font-size:11px;color:#9c9a92;margin-top:.5rem">저장 시 기업정보·진단결과·연락처·액션아이템이 팀 구글시트에 자동 기록됩니다</p>
 
     <button class="btn-outline" onclick="goStep(4)">수출 로드맵 생성하기 →</button>
   </section>
