@@ -195,3 +195,60 @@ function fillFormFromSheets(data) {
     statusEl.textContent = `📋 이전 미팅 기록 발견 (${data['날짜']}) — 데이터를 불러왔습니다`;
   }
 }
+
+// ── 온보딩 폼 이메일 발송 ──
+async function sendOnboardingForm() {
+  const url = getSheetsUrl();
+  if (!url) {
+    alert('구글시트 웹훅 URL이 설정되지 않았습니다.\n⚙ 설정에서 URL을 입력해주세요.');
+    toggleApiBanner();
+    return;
+  }
+
+  const email = document.getElementById('f-contact-email')?.value || '';
+  const contactName = document.getElementById('f-contact-name')?.value || '';
+  const companyName = document.getElementById('f-name')?.value || '';
+
+  if (!email) {
+    alert('고객사 이메일을 먼저 입력해주세요.\n(1단계 기업 사전조사 → 이메일 필드)');
+    return;
+  }
+
+  if (!confirm(`${companyName} (${email}) 으로\n온보딩 폼 링크를 발송하시겠습니까?`)) return;
+
+  const btn = document.getElementById('email-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '발송 중...'; }
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _action: 'sendEmail',
+        companyName,
+        contactName,
+        email,
+      }),
+    });
+
+    const el = document.getElementById('email-status');
+    if (el) {
+      el.style.display = 'block';
+      el.style.background = '#E1F5EE';
+      el.style.color = '#085041';
+      el.textContent = `✓ ${email} 으로 온보딩 폼이 발송되었습니다`;
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+  } catch(e) {
+    const el = document.getElementById('email-status');
+    if (el) {
+      el.style.display = 'block';
+      el.style.background = '#FCEBEB';
+      el.style.color = '#791F1F';
+      el.textContent = '발송 실패 — 웹훅 URL을 확인해주세요';
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📧 온보딩 폼 이메일 발송'; }
+  }
+}
