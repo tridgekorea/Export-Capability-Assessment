@@ -216,24 +216,9 @@ function sendOnboardingForm() {
   }
 
   const subject = encodeURIComponent(`[Tridge ARK] ${companyName} — Seller Onboarding Form 작성 요청`);
-  const body = encodeURIComponent(
-`${contactName}님 안녕하세요,
+  const body = encodeURIComponent(`${contactName}님 안녕하세요,\n\nSeller Onboarding Form 작성 부탁드립니다.\n\n${formUrl}\n\n감사합니다.\nTridge ARK 팀`);
 
-Tridge ARK 수출 지원 서비스 이용을 위해 아래 온보딩 폼을 작성해 주시기 바랍니다.
-
-📋 온보딩 폼 작성하기:
-${formUrl}
-
-작성하신 내용을 바탕으로 바이어 발굴 및 아웃리치를 진행해 드리겠습니다.
-확인 가능한 정보만 작성해 주시고, 모르는 항목은 비워두셔도 됩니다.
-
-궁금하신 점이 있으시면 언제든지 연락 주세요.
-
-감사합니다.
-Tridge ARK 팀`
-  );
-
-  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${subject}&body=${body}`;
   const a = document.createElement('a');
   a.href = gmailUrl;
   a.target = '_blank';
