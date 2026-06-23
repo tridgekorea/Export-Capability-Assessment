@@ -1,5 +1,26 @@
 // js/report.js — 리포트 렌더링 & PDF 출력
 
+// 지역별 ARK 실측 응답률
+function getArkRate(market) {
+  if (!market) return null;
+  const apac = ['일본','동남아','호주','중국'];
+  const mena = ['중동'];
+  const eu   = ['유럽'];
+  const amer = ['미국/캐나다'];
+  if (apac.some(m => market.includes(m))) return { region: 'APAC', rate: '34%' };
+  if (mena.some(m => market.includes(m))) return { region: 'MENA', rate: '22%' };
+  if (eu.some(m => market.includes(m)))   return { region: 'EU',   rate: '19%' };
+  if (amer.some(m => market.includes(m))) return { region: 'Americas', rate: '17%' };
+  return null;
+}
+
+function getMarkets() {
+  const m1 = getField('f-market1') || getField('f-market') || '';
+  const m2 = getField('f-market2') || '';
+  const m3 = getField('f-market3') || '';
+  return [m1, m2, m3].filter(Boolean);
+}
+
 function renderTodos() {
   const el = document.getElementById('todo-list');
   if (!el) return;
@@ -23,9 +44,12 @@ function renderReport() {
   renderTodos();
   const { overallAvg, areaScores, todos } = STATE;
   const name       = getField('f-name') || '(기업명 미입력)';
-  const contact    = getField('f-contact') || '-';
+  const contactName  = getField('f-contact-name') || getField('f-contact') || '-';
+  const contactTitle = getField('f-contact-title') || '';
+  const contactEmail = getField('f-contact-email') || '';
+  const contactPhone = getField('f-contact-phone') || '';
   const product    = getField('f-product') || '-';
-  const market     = getField('f-market') || '-';
+  const markets    = getMarkets();
   const exp        = getField('f-exp') || '-';
   const usp        = getField('f-usp') || '-';
   const meetmemo   = getField('f-meetmemo') || '-';
@@ -34,6 +58,16 @@ function renderReport() {
   const strong     = Object.entries(areaScores).filter(([,v]) => v.score >= 3.5).map(([k]) => k);
   const weak       = Object.entries(areaScores).filter(([,v]) => v.score < 2.5).map(([k]) => k);
 
+  const contactStr = [contactName, contactTitle].filter(Boolean).join(' / ');
+  const contactInfo = [contactEmail, contactPhone].filter(Boolean).join(' · ');
+
+  // 목표시장별 ARK 전략 행
+  const marketRows = markets.map((m, i) => {
+    const rate = getArkRate(m);
+    const label = ['1순위','2순위','3순위'][i];
+    return `<tr><td>목표시장 ${label}</td><td>${m}${rate ? ` &nbsp;<span style="color:#185FA5;font-weight:600">${rate.region} 실측 응답률 ${rate.rate}</span>` : ''}</td></tr>`;
+  }).join('');
+
   document.getElementById('report-preview').innerHTML = `
     <h2>수출역량 상담 리포트</h2>
     <div style="font-size:11px;color:#999;margin-bottom:.25rem">Tridge ARK &nbsp;·&nbsp; ${nowStr()}</div>
@@ -41,9 +75,9 @@ function renderReport() {
     <h3>1. 미팅 개요</h3>
     <table>
       <tr><td>기업명</td><td>${name}</td></tr>
-      <tr><td>담당자</td><td>${contact}</td></tr>
+      <tr><td>담당자</td><td>${contactStr}${contactInfo ? `<br><span style="color:#9c9a92;font-size:11px">${contactInfo}</span>` : ''}</td></tr>
       <tr><td>주요 품목</td><td>${product}</td></tr>
-      <tr><td>목표 시장</td><td>${market}</td></tr>
+      <tr><td>목표 시장</td><td>${markets.join(' · ') || '-'}</td></tr>
       <tr><td>수출 경력</td><td>${exp}</td></tr>
       <tr><td>핵심 USP</td><td>${usp}</td></tr>
       <tr><td>미팅 메모</td><td>${meetmemo}</td></tr>
@@ -61,15 +95,14 @@ function renderReport() {
     <table>
       <tr><td>강점</td><td>${strong.length ? strong.join(', ') : '진단 데이터 부족'}</td></tr>
       <tr><td>보완 필요</td><td>${weak.length ? weak.join(', ') : '전반 양호'}</td></tr>
-      <tr><td>기회</td><td>${market} 시장 내 ${product} 수요 증가, ARK 바이어 매칭 가능</td></tr>
     </table>
     <hr>
     <h3>4. ARK 바이어 발굴 전략</h3>
     <table>
-      <tr><td>1순위 바이어</td><td>K-Food Direct LLC (미국, 매칭률 91%)</td></tr>
-      <tr><td>2순위 바이어</td><td>Sunrise Trading Co. (일본, 매칭률 84%)</td></tr>
-      <tr><td>3순위 바이어</td><td>AsiaBridge GmbH (독일, 매칭률 76%)</td></tr>
-      <tr><td>검색 조건</td><td>최근 12개월 수입 실적 · $50만불+ · HS코드 매칭</td></tr>
+      ${marketRows || '<tr><td>목표 시장</td><td>미입력</td></tr>'}
+      <tr><td>ARK 대행 범위</td><td>바이어 발굴·스코어링·현지어 AI 아웃리치 직접 발송·미팅 세팅</td></tr>
+      <tr><td>고객사 역할</td><td>미팅 참여 · 가격 협상 · 계약 체결</td></tr>
+      <tr><td>성과 퍼널</td><td>아웃리치 → 응답 → 미팅(50%) → 샘플(60%) → 계약(50%)</td></tr>
     </table>
     <hr>
     <h3>5. 다음 액션 아이템</h3>
@@ -84,7 +117,6 @@ async function downloadPdf() {
   if (!window.jspdf) { alert('PDF 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
   const { jsPDF } = window.jspdf;
 
-  // 한글 폰트 로드
   let nanumRegular = null;
   let nanumBold = null;
   try {
@@ -100,7 +132,6 @@ async function downloadPdf() {
 
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
 
-  // 폰트 등록
   if (nanumRegular && nanumBold) {
     const toBase64 = (buf) => {
       let binary = '';
@@ -115,22 +146,25 @@ async function downloadPdf() {
     doc.setFont('NanumGothic', 'normal');
   }
 
-  const KR  = nanumRegular ? 'NanumGothic' : 'helvetica';
+  const KR = nanumRegular ? 'NanumGothic' : 'helvetica';
   const W = 210, M = 18, cw = W - M * 2;
   let y = 22;
 
-  const name       = getField('f-name') || '기업명 미입력';
-  const contact    = getField('f-contact') || '-';
-  const product    = getField('f-product') || '-';
-  const market     = getField('f-market') || '-';
-  const exp        = getField('f-exp') || '-';
-  const usp        = getField('f-usp') || '-';
-  const meetmemo   = getField('f-meetmemo') || '-';
-  const conclusion = getField('f-conclusion') || '';
+  const name         = getField('f-name') || '기업명 미입력';
+  const contactName  = getField('f-contact-name') || getField('f-contact') || '-';
+  const contactTitle = getField('f-contact-title') || '';
+  const contactEmail = getField('f-contact-email') || '';
+  const contactPhone = getField('f-contact-phone') || '';
+  const product      = getField('f-product') || '-';
+  const markets      = getMarkets();
+  const exp          = getField('f-exp') || '-';
+  const usp          = getField('f-usp') || '-';
+  const meetmemo     = getField('f-meetmemo') || '-';
+  const conclusion   = getField('f-conclusion') || '';
   const { overallAvg, areaScores, todos } = STATE;
-  const grade   = overallAvg >= 4 ? '우수' : overallAvg >= 3 ? '양호' : overallAvg >= 2 ? '보통' : '초기';
-  const strong  = Object.entries(areaScores).filter(([,v]) => v.score >= 3.5).map(([k]) => k);
-  const weak    = Object.entries(areaScores).filter(([,v]) => v.score < 2.5).map(([k]) => k);
+  const grade  = overallAvg >= 4 ? '우수' : overallAvg >= 3 ? '양호' : overallAvg >= 2 ? '보통' : '초기';
+  const strong = Object.entries(areaScores).filter(([,v]) => v.score >= 3.5).map(([k]) => k);
+  const weak   = Object.entries(areaScores).filter(([,v]) => v.score < 2.5).map(([k]) => k);
 
   const checkY = (need = 10) => { if (y + need > 275) { doc.addPage(); y = 20; } };
 
@@ -173,8 +207,14 @@ async function downloadPdf() {
   doc.line(M, y, W - M, y); y += 8;
 
   section('1. 미팅 개요');
-  row('기업명', name); row('담당자', contact);
-  row('주요 품목', product); row('목표 시장', market);
+  row('기업명', name);
+  const contactStr = [contactName, contactTitle].filter(Boolean).join(' / ');
+  row('담당자', contactStr);
+  if (contactEmail || contactPhone) {
+    row('연락처', [contactEmail, contactPhone].filter(Boolean).join('  ·  '));
+  }
+  row('주요 품목', product);
+  row('목표 시장', markets.join(' · ') || '-');
   row('수출 경력', exp);
   row('핵심 USP', doc.splitTextToSize(usp, cw - 42).join(' '));
   row('미팅 메모', doc.splitTextToSize(meetmemo, cw - 42).join(' '));
@@ -190,20 +230,23 @@ async function downloadPdf() {
   section('3. 핵심 발견사항');
   row('강점', strong.length ? strong.join(', ') : '진단 데이터 부족');
   row('보완 필요', weak.length ? weak.join(', ') : '전반 양호');
-  row('기회', `${market} 시장 내 ${product} 수요 증가`);
   y += 4;
 
   section('4. ARK 바이어 발굴 전략');
-  row('1순위', 'K-Food Direct LLC  |  미국  |  매칭률 91%');
-  row('2순위', 'Sunrise Trading Co.  |  일본  |  매칭률 84%');
-  row('3순위', 'AsiaBridge GmbH  |  독일  |  매칭률 76%');
-  row('검색 조건', '최근 12개월 수입 실적 · $50만불+ · HS코드 매칭');
+  markets.forEach((m, i) => {
+    const rate = getArkRate(m);
+    const label = ['1순위 시장', '2순위 시장', '3순위 시장'][i];
+    row(label, rate ? `${m}  (${rate.region} 실측 응답률 ${rate.rate})` : m);
+  });
+  row('ARK 대행', '바이어 발굴·스코어링·현지어 AI 아웃리치 직접 발송·미팅 세팅');
+  row('고객사 역할', '미팅 참여 · 가격 협상 · 계약 체결');
+  row('성과 퍼널', '아웃리치 → 응답 → 미팅(50%) → 샘플(60%) → 계약(50%)');
   y += 4;
 
   section('5. 다음 액션 아이템');
   todos.forEach((t, i) => {
     checkY(7);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(KR, 'normal');
     doc.setFontSize(9);
     doc.setTextColor(40, 40, 40);
     const txt = doc.splitTextToSize(`${i + 1}. ${t.text || '-'}`, cw - 50);
@@ -215,7 +258,7 @@ async function downloadPdf() {
 
   if (conclusion) {
     y += 4; section('종합 결론');
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(KR, 'normal');
     doc.setFontSize(9);
     doc.setTextColor(40, 40, 40);
     const cl = doc.splitTextToSize(conclusion, cw);
@@ -228,7 +271,7 @@ async function downloadPdf() {
   doc.setDrawColor(210, 215, 220);
   doc.setLineWidth(0.3);
   doc.line(M, y, W - M, y); y += 5;
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(KR, 'normal');
   doc.setFontSize(8);
   doc.setTextColor(180, 180, 180);
   doc.text('본 리포트는 Tridge ARK 수출역량 상담 도구를 통해 생성되었습니다.', M, y);
