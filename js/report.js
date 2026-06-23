@@ -126,17 +126,17 @@ function downloadPdf() {
     return;
   }
 
-  const REPORT_CSS = `
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; font-size:13px; color:#1a1a18; background:#f5f4f0; padding:2rem; }
-    .page { max-width:800px; margin:0 auto; background:#fff; border-radius:12px; padding:2.5rem 3rem; box-shadow:0 1px 8px rgba(0,0,0,0.08); }
-    h2 { font-size:18px; font-weight:600; color:#185FA5; margin-bottom:4px; }
-    h3 { font-size:12px; font-weight:600; color:#185FA5; margin:1.2rem 0 .5rem; padding-bottom:4px; border-bottom:1px solid #d0cec8; }
-    hr { border:none; border-top:1px solid #e0ddd6; margin:.75rem 0; }
-    table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:.5rem; }
-    td { padding:6px 8px; border:1px solid #e0ddd6; vertical-align:top; line-height:1.6; }
-    td:first-child { width:28%; font-weight:500; color:#5f5e5a; background:#f5f4f0; white-space:nowrap; }
-    @media print { body { background:#fff; padding:0; } .page { box-shadow:none; border-radius:0; padding:1.5rem 2rem; } }
-  `;
+  var REPORT_CSS = [
+    'body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans KR, sans-serif; font-size:13px; color:#1a1a18; background:#f5f4f0; padding:2rem; }',
+    '.page { max-width:800px; margin:0 auto; background:#fff; border-radius:12px; padding:2.5rem 3rem; box-shadow:0 1px 8px rgba(0,0,0,0.08); }',
+    'h2 { font-size:18px; font-weight:600; color:#185FA5; margin-bottom:4px; }',
+    'h3 { font-size:12px; font-weight:600; color:#185FA5; margin:1.2rem 0 .5rem; padding-bottom:4px; border-bottom:1px solid #d0cec8; }',
+    'hr { border:none; border-top:1px solid #e0ddd6; margin:.75rem 0; }',
+    'table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:.5rem; }',
+    'td { padding:6px 8px; border:1px solid #e0ddd6; vertical-align:top; line-height:1.6; }',
+    'td:first-child { width:28%; font-weight:500; color:#5f5e5a; background:#f5f4f0; white-space:nowrap; }',
+    '@media print { body { background:#fff; padding:0; } .page { box-shadow:none; border-radius:0; padding:1.5rem 2rem; } }'
+  ].join(' ');
 
   const html = '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8">\n<title>ARK 수출역량 상담 리포트 · ' + name + '</title>\n<style>' + REPORT_CSS + '</style>\n</head>\n<body>\n<div class="page">\n' + previewEl.innerHTML + '\n</div>\n</body>\n</html>';
 
