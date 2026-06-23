@@ -118,176 +118,47 @@ function renderReport() {
     </table>`;
 }
 
-async function downloadPdf() {
-  if (!window.jspdf) { alert('PDF 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return; }
-  const { jsPDF } = window.jspdf;
-
-  let nanumRegular = null;
-  let nanumBold = null;
-  try {
-    const [r1, r2] = await Promise.all([
-      fetch('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/NanumGothic.woff').then(r => r.arrayBuffer()),
-      fetch('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/NanumGothicBold.woff').then(r => r.arrayBuffer()),
-    ]);
-    nanumRegular = r1;
-    nanumBold = r2;
-  } catch(e) {
-    console.warn('한글 폰트 로드 실패, 기본 폰트 사용:', e);
+function downloadPdf() {
+  const name = getField('f-name') || '기업명';
+  const previewEl = document.getElementById('report-preview');
+  if (!previewEl || !previewEl.innerHTML.trim()) {
+    alert('리포트를 먼저 확인해주세요.');
+    return;
   }
 
-  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const REPORT_CSS = `
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; font-size:13px; color:#1a1a18; background:#f5f4f0; padding:2rem; }
+    .page { max-width:800px; margin:0 auto; background:#fff; border-radius:12px; padding:2.5rem 3rem; box-shadow:0 1px 8px rgba(0,0,0,0.08); }
+    h2 { font-size:18px; font-weight:600; color:#185FA5; margin-bottom:4px; }
+    h3 { font-size:12px; font-weight:600; color:#185FA5; margin:1.2rem 0 .5rem; padding-bottom:4px; border-bottom:1px solid #d0cec8; }
+    hr { border:none; border-top:1px solid #e0ddd6; margin:.75rem 0; }
+    table { width:100%; border-collapse:collapse; font-size:12px; margin-bottom:.5rem; }
+    td { padding:6px 8px; border:1px solid #e0ddd6; vertical-align:top; line-height:1.6; }
+    td:first-child { width:28%; font-weight:500; color:#5f5e5a; background:#f5f4f0; white-space:nowrap; }
+    @media print { body { background:#fff; padding:0; } .page { box-shadow:none; border-radius:0; padding:1.5rem 2rem; } }
+  `;
 
-  if (nanumRegular && nanumBold) {
-    const toBase64 = (buf) => {
-      let binary = '';
-      const bytes = new Uint8Array(buf);
-      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      return btoa(binary);
-    };
-    doc.addFileToVFS('NanumGothic.ttf', toBase64(nanumRegular));
-    doc.addFileToVFS('NanumGothicBold.ttf', toBase64(nanumBold));
-    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-    doc.addFont('NanumGothicBold.ttf', 'NanumGothic', 'bold');
-    doc.setFont('NanumGothic', 'normal');
-  }
+  const html = \`<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ARK 수출역량 상담 리포트 · \${name}</title>
+<style>\${REPORT_CSS}</style>
+</head>
+<body>
+<div class="page">
+\${previewEl.innerHTML}
+</div>
+</body>
+</html>\`;
 
-  const KR = nanumRegular ? 'NanumGothic' : 'helvetica';
-  const W = 210, M = 18, cw = W - M * 2;
-  let y = 22;
-
-  const name         = getField('f-name') || '기업명 미입력';
-  const contactName  = getField('f-contact-name') || getField('f-contact') || '-';
-  const contactTitle = getField('f-contact-title') || '';
-  const contactEmail = getField('f-contact-email') || '';
-  const contactPhone = getField('f-contact-phone') || '';
-  const product      = getField('f-product') || '-';
-  const markets      = getMarkets();
-  const exp          = getField('f-exp') || '-';
-  const usp          = getField('f-usp') || '-';
-  const meetmemo     = getField('f-meetmemo') || '-';
-  const conclusion   = getField('f-conclusion') || '';
-  const { overallAvg, areaScores, todos } = STATE;
-  const grade  = overallAvg >= 4 ? '우수' : overallAvg >= 3 ? '양호' : overallAvg >= 2 ? '보통' : '초기';
-  const strong = Object.entries(areaScores).filter(([,v]) => v.score >= 3.5).map(([k]) => k);
-  const weak   = Object.entries(areaScores).filter(([,v]) => v.score < 2.5).map(([k]) => k);
-
-  const checkY = (need = 10) => { if (y + need > 275) { doc.addPage(); y = 20; } };
-
-  const section = (title) => {
-    checkY(14);
-    doc.setFont(KR, 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(24, 95, 165);
-    doc.text(title, M, y); y += 4;
-    doc.setDrawColor(24, 95, 165);
-    doc.setLineWidth(0.2);
-    doc.line(M, y, W - M, y); y += 5;
-    doc.setTextColor(40, 40, 40);
-  };
-
-  const row = (label, value) => {
-    checkY(7);
-    doc.setFont(KR, 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(110, 110, 110);
-    doc.text(label, M, y);
-    doc.setFont(KR, 'normal');
-    doc.setTextColor(40, 40, 40);
-    const lines = doc.splitTextToSize(String(value), cw - 42);
-    doc.text(lines, M + 40, y);
-    y += lines.length * 5 + 1;
-  };
-
-  // Header
-  doc.setFont(KR, 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(24, 95, 165);
-  doc.text('수출역량 상담 리포트', M, y); y += 7;
-  doc.setFont(KR, 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Tridge ARK  |  ${nowStr()}  |  ${name}`, M, y); y += 8;
-  doc.setDrawColor(200, 210, 220);
-  doc.setLineWidth(0.3);
-  doc.line(M, y, W - M, y); y += 8;
-
-  section('1. 미팅 개요');
-  row('기업명', name);
-  const contactStr = [contactName, contactTitle].filter(Boolean).join(' / ');
-  row('담당자', contactStr);
-  if (contactEmail || contactPhone) {
-    row('연락처', [contactEmail, contactPhone].filter(Boolean).join('  ·  '));
-  }
-  row('주요 품목', product);
-  row('목표 시장', markets.join(' · ') || '-');
-  row('수출 경력', exp);
-  row('핵심 USP', doc.splitTextToSize(usp, cw - 42).join(' '));
-  row('미팅 메모', doc.splitTextToSize(meetmemo, cw - 42).join(' '));
-  y += 4;
-
-  section('2. 역량 진단 결과');
-  row('종합 점수', `${overallAvg} / 5.0  (${grade})`);
-  Object.entries(areaScores).forEach(([k, v]) => {
-    row(k, `${'●'.repeat(Math.round(v.score))}${'○'.repeat(5 - Math.round(v.score))}  ${v.score}점`);
-  });
-  y += 4;
-
-  section('3. 핵심 발견사항');
-  row('강점', strong.length ? strong.join(', ') : '진단 데이터 부족');
-  row('보완 필요', weak.length ? weak.join(', ') : '전반 양호');
-  y += 4;
-
-  section('4. ARK 바이어 발굴 전략');
-  markets.forEach((m, i) => {
-    const rate = getArkRate(m);
-    const label = ['1순위 시장', '2순위 시장', '3순위 시장'][i];
-    row(label, rate ? `${m}  (${rate.region} 실측 응답률 ${rate.rate})` : m);
-  });
-  row('ARK 대행', '바이어 발굴·스코어링·현지어 AI 아웃리치 직접 발송·미팅 세팅');
-  row('고객사 역할', '미팅 참여 · 가격 협상 · 계약 체결');
-  row('성과 퍼널', '아웃리치 → 응답 → 미팅(50%) → 샘플(60%) → 계약(50%)');
-  y += 4;
-
-  section('5. 다음 액션 아이템');
-  todos.forEach((t, i) => {
-    checkY(7);
-    doc.setFont(KR, 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(40, 40, 40);
-    const txt = doc.splitTextToSize(`${i + 1}. ${t.text || '-'}`, cw - 50);
-    doc.text(txt, M, y);
-    doc.setTextColor(120, 120, 120);
-    doc.text(`${t.owner || '-'} · ${t.due}`, W - M, y, { align: 'right' });
-    y += txt.length * 5 + 2;
-  });
-
-  if (conclusion) {
-    y += 4; section('종합 결론');
-    doc.setFont(KR, 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(40, 40, 40);
-    const cl = doc.splitTextToSize(conclusion, cw);
-    checkY(cl.length * 5 + 4);
-    doc.text(cl, M, y);
-    y += cl.length * 5 + 4;
-  }
-
-  // 6. 미팅 결론 및 종합 메모
-  y += 4; section('6. 미팅 결론 및 종합 메모');
-  row('미팅 특이사항', doc.splitTextToSize(meetmemo !== '-' ? meetmemo : '없음', cw - 42).join(' '));
-  if (conclusion) {
-    row('종합 결론', doc.splitTextToSize(conclusion, cw - 42).join(' '));
-  }
-  y += 4;
-
-  checkY(10);
-  doc.setDrawColor(210, 215, 220);
-  doc.setLineWidth(0.3);
-  doc.line(M, y, W - M, y); y += 5;
-  doc.setFont(KR, 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(180, 180, 180);
-  doc.text('본 리포트는 Tridge ARK 수출역량 상담 도구를 통해 생성되었습니다.', M, y);
-
-  doc.save(`ARK_수출역량리포트_${name.replace(/\s/g,'_')}_${nowStr()}.pdf`);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = \`ARK_수출역량리포트_\${name.replace(/\s/g,'_')}_\${nowStr()}.html\`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
