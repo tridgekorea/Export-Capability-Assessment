@@ -28,7 +28,7 @@ function collectAppData() {
 
   // 액션 아이템 텍스트로 수집
   const todos = [];
-  document.querySelectorAll('.todo-text').forEach(el => {
+  document.querySelectorAll('.todo-row input[type="text"]:first-child').forEach(el => {
     if (el.value) todos.push(el.value);
   });
 
@@ -74,8 +74,15 @@ function collectAppData() {
     '약점 영역':  typeof weakDomain !== 'undefined' ? weakDomain : '',
     'ARK 전략':   document.querySelector('#ark-strategy')?.innerText?.slice(0, 200) || '',
 
+    // 목표시장 (직접입력 포함)
+    '목표시장 1순위': (function() { const s = document.getElementById('f-market1'); if (!s) return ''; return s.value === '직접입력' ? (document.getElementById('f-market1-custom')?.value || '') : s.value; })(),
+    '목표시장 2순위': (function() { const s = document.getElementById('f-market2'); if (!s) return ''; return s.value === '직접입력' ? (document.getElementById('f-market2-custom')?.value || '') : s.value; })(),
+    '목표시장 3순위': (function() { const s = document.getElementById('f-market3'); if (!s) return ''; return s.value === '직접입력' ? (document.getElementById('f-market3-custom')?.value || '') : s.value; })(),
+
     // 메모
     '미팅 메모':  document.getElementById('f-meetmemo')?.value || '',
+    '미팅 특이사항': document.getElementById('f-meetmemo')?.value || '',
+    '미팅 결론':  document.getElementById('f-conclusion')?.value || '',
     '다음 액션':  todos.join(' / '),
 
     // 파이프라인 (초기값)

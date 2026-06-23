@@ -9,6 +9,7 @@ const DIAG_ITEMS = [
   { id:'trademark', area:'브랜드·인증', color:'#378ADD', q:'주요 수출국 상표권이 등록되어 있다',                  hint:'IP 보호' },
   { id:'org',       area:'인적역량',    color:'#7F77DD', q:'수출 전담 부서 및 3년 이상 경력 인력이 있다',          hint:'조직·인력' },
   { id:'lang',      area:'인적역량',    color:'#7F77DD', q:'외국어 수출 상담이 가능한 인력이 충분하다',            hint:'외국어 역량' },
+  { id:'bizdev',    area:'인적역량',    color:'#7F77DD', q:'신규 바이어 발굴을 위한 전담 인력이 있다',              hint:'바이어 발굴 역량' },
   { id:'plan',      area:'시장개척',    color:'#D85A30', q:'국가별 수출계획이 구체적으로 수립되어 있다',           hint:'수출계획' },
   { id:'channel',   area:'시장개척',    color:'#D85A30', q:'온·오프라인 해외 유통채널에 다수 입점해 있다',         hint:'유통채널' },
   { id:'buyer_n',   area:'시장개척',    color:'#D85A30', q:'직·간접 수출 바이어를 다수(9명+) 보유하고 있다',      hint:'바이어 보유' },

@@ -36,7 +36,10 @@ async function generateRoadmap() {
   const { overallAvg, areaScores } = STATE;
   const name     = getField('f-name')    || '(미입력)';
   const product  = getField('f-product') || '가공식품';
-  const market   = getField('f-market')  || '미국/캐나다';
+  const market   = getField('f-market1') || getField('f-market') || '미국/캐나다';
+  const market2  = getField('f-market2') || '';
+  const market3  = getField('f-market3') || '';
+  const marketStr = [market, market2, market3].filter(Boolean).join(' · ');
   const exp      = getField('f-exp')     || '미경험';
   const usp      = getField('f-usp')     || '';
   const meetmemo = getField('f-meetmemo') || '';
@@ -55,7 +58,7 @@ async function generateRoadmap() {
   status.style.display = 'block';
   status.innerHTML = '<span class="spinner"></span> 로드맵을 생성하고 있습니다...';
 
-  output.innerHTML = buildRoadmapHTML(name, product, market, overallAvg, grade, strong, weak, f, g);
+  output.innerHTML = buildRoadmapHTML(name, product, marketStr, overallAvg, grade, strong, weak, f, g);
 
   const aiBox = document.getElementById('rm-phases');
   if (!aiBox) return;
@@ -64,15 +67,16 @@ async function generateRoadmap() {
 ARK 대행: 바이어 발굴·스코어링 → 30개+ 언어 AI 아웃리치 직접 발송 → 미팅 세팅·중계
 고객사 담당: 미팅 참여 → 가격 협상 → 계약 체결 → 샘플 발송
 "ARK에서 검색", "리스트 추출" 절대 금지. "ARK가 직접 대행"으로만 표현.
+구체적인 바이어 수, 업체 수, 건수 등 수치 예측 절대 금지. "몇 개사", "몇 건" 같은 표현 사용 금지.
 추상적 표현 금지. 내일 당장 실행 가능한 수준으로 구체적 작성.`;
 
   const userPrompt = `아래 기업 정보로 3단계 실행 전략을 작성하세요.
 
-기업: ${name} | 품목: ${product} | 목표시장: ${market}(${f.region})
+기업: ${name} | 품목: ${product} | 목표시장: ${marketStr}(${f.region})
 역량: ${overallAvg}/5.0(${grade}) | ${areaStr}
 강점: ${strong.join(', ')||'없음'} | 보완필요: ${weak.join(', ')||'없음'}
 USP: ${usp}
-ARK퍼널: 아웃리치 ${f.outreach}개사 → 응답 ${f.response}건(${f.region} ${pct}%) → 미팅 ${f.meeting}건 → 계약 ${f.contract}건
+ARK퍼널: 아웃리치 → 응답(${f.region} 실측 ${pct}%) → 미팅 → 샘플 → 계약
 
 아래 형식으로 정확히 작성. 구분자 반드시 포함:
 
@@ -237,7 +241,7 @@ function buildRoadmapHTML(name, product, market, avg, grade, strong, weak, f, g)
       </tr>
       <tr>
         <td class="td-a">ARK 실행</td>
-        <td class="td-c"><div class="ci"><div class="cd cd-a"></div><span>바이어 분석·스코어링</span></div><div class="ci"><div class="cd cd-a"></div><span>아웃리치 개시 (${f.outreach}개사)</span></div></td>
+        <td class="td-c"><div class="ci"><div class="cd cd-a"></div><span>바이어 분석·스코어링</span></div><div class="ci"><div class="cd cd-a"></div><span>아웃리치 개시</span></div></td>
         <td class="td-c"><div class="ci"><div class="cd cd-a"></div><span>응답 관리</span></div></td>
         <td class="td-c"><div class="ci"><div class="cd cd-a"></div><span>미팅 세팅 ${f.meeting}건</span></div></td>
         <td class="td-c"><div class="ci"><div class="cd cd-a"></div><span>2차 아웃리치 준비</span></div></td>
