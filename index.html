@@ -57,6 +57,12 @@
       <button onclick="saveSettingsAll()"
         style="padding:5px 16px;font-size:12px;font-weight:700;background:#1D9E75;color:#fff;border:none;border-radius:6px;cursor:pointer">저장</button>
     </div>
+    <div style="width:100%;display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:0.5px solid #E5A020;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:700;color:#854F0B;white-space:nowrap">📋 온보딩 폼 URL</span>
+      <input type="text" id="onboarding-form-url-input" placeholder="https://docs.google.com/forms/d/e/..."
+        style="flex:1;min-width:200px;font-size:12px;padding:5px 10px;border:0.5px solid #ccc;border-radius:6px" />
+      <span style="font-size:10px;color:#9c9a92">구글시트 "설정" 탭의 온보딩 폼 URL</span>
+    </div>
   </div>
 
   <!-- STEP NAV -->
@@ -288,16 +294,21 @@
 document.addEventListener('DOMContentLoaded', function() {
   var url = localStorage.getItem('ark_sheets_webhook_url') || '';
   var name = localStorage.getItem('ark_consultant_name') || '';
+  var formUrl = localStorage.getItem('ark_onboarding_form_url') || '';
   var ui = document.getElementById('sheets-url-input');
   var ni = document.getElementById('consultant-name-input');
+  var fi = document.getElementById('onboarding-form-url-input');
   if (ui) ui.value = url;
   if (ni) ni.value = name;
+  if (fi) fi.value = formUrl;
 });
 function saveSettingsAll() {
   var url = document.getElementById('sheets-url-input').value.trim();
   var name = document.getElementById('consultant-name-input').value.trim();
+  var formUrl = document.getElementById('onboarding-form-url-input').value.trim();
   if (url) localStorage.setItem('ark_sheets_webhook_url', url);
   if (name) localStorage.setItem('ark_consultant_name', name);
+  if (formUrl) localStorage.setItem('ark_onboarding_form_url', formUrl);
   saveApiKeys();
   alert('설정이 저장되었습니다!');
 }
