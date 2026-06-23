@@ -196,15 +196,8 @@ function fillFormFromSheets(data) {
   }
 }
 
-// ── 온보딩 폼 이메일 발송 ──
-async function sendOnboardingForm() {
-  const url = getSheetsUrl();
-  if (!url) {
-    alert('구글시트 웹훅 URL이 설정되지 않았습니다.\n⚙ 설정에서 URL을 입력해주세요.');
-    toggleApiBanner();
-    return;
-  }
-
+// ── 온보딩 폼 이메일 발송 (mailto 방식) ──
+function sendOnboardingForm() {
   const email = document.getElementById('f-contact-email')?.value || '';
   const contactName = document.getElementById('f-contact-name')?.value || '';
   const companyName = document.getElementById('f-name')?.value || '';
@@ -214,41 +207,31 @@ async function sendOnboardingForm() {
     return;
   }
 
-  if (!confirm(`${companyName} (${email}) 으로\n온보딩 폼 링크를 발송하시겠습니까?`)) return;
-
-  const btn = document.getElementById('email-send-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '발송 중...'; }
-
-  try {
-    await fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        _action: 'sendEmail',
-        companyName,
-        contactName,
-        email,
-      }),
-    });
-
-    const el = document.getElementById('email-status');
-    if (el) {
-      el.style.display = 'block';
-      el.style.background = '#E1F5EE';
-      el.style.color = '#085041';
-      el.textContent = `✓ ${email} 으로 온보딩 폼이 발송되었습니다`;
-      setTimeout(() => { el.style.display = 'none'; }, 5000);
-    }
-  } catch(e) {
-    const el = document.getElementById('email-status');
-    if (el) {
-      el.style.display = 'block';
-      el.style.background = '#FCEBEB';
-      el.style.color = '#791F1F';
-      el.textContent = '발송 실패 — 웹훅 URL을 확인해주세요';
-    }
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '📧 온보딩 폼 이메일 발송'; }
+  // 구글시트 설정 시트에 저장된 폼 URL (없으면 기본값)
+  const formUrl = localStorage.getItem('ark_onboarding_form_url') || '';
+  if (!formUrl) {
+    alert('온보딩 폼 URL이 설정되지 않았습니다.\n⚙ 설정에서 폼 URL을 입력해주세요.');
+    toggleApiBanner();
+    return;
   }
+
+  const subject = encodeURIComponent(`[Tridge ARK] ${companyName} — Seller Onboarding Form 작성 요청`);
+  const body = encodeURIComponent(
+`${contactName}님 안녕하세요,
+
+Tridge ARK 수출 지원 서비스 이용을 위해 아래 온보딩 폼을 작성해 주시기 바랍니다.
+
+📋 온보딩 폼 작성하기:
+${formUrl}
+
+작성하신 내용을 바탕으로 바이어 발굴 및 아웃리치를 진행해 드리겠습니다.
+확인 가능한 정보만 작성해 주시고, 모르는 항목은 비워두셔도 됩니다.
+
+궁금하신 점이 있으시면 언제든지 연락 주세요.
+
+감사합니다.
+Tridge ARK 팀`
+  );
+
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
 }
