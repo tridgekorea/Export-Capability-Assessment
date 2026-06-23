@@ -233,5 +233,5 @@ ${formUrl}
 Tridge ARK 팀`
   );
 
-  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${email}&su=${subject}&body=${body}`, '_blank');
 }
