@@ -70,9 +70,8 @@
   <nav class="step-nav">
     <button class="step-btn active" data-step="0" onclick="goStep(0)">① 기업 사전조사</button>
     <button class="step-btn" data-step="1" onclick="goStep(1)">② 역량 진단</button>
-    <button class="step-btn" data-step="2" onclick="goStep(2)">③ 바이어 전략</button>
+    <button class="step-btn" data-step="2" onclick="goStep(2)">③ AI 진단 결과</button>
     <button class="step-btn" data-step="3" onclick="goStep(3)">④ 액션 &amp; 리포트</button>
-    <button class="step-btn" data-step="4" onclick="goStep(4)">⑤ 수출 로드맵</button>
   </nav>
 
   <!-- STEP 0: 기업 사전조사 -->
@@ -222,16 +221,19 @@
 
   <!-- STEP 1: 역량 진단 -->
   <section class="panel" id="p1">
-    <p class="sec-label">수출 역량 진단 — 12개 항목 (고객사와 함께 작성)</p>
+    <p class="sec-label">수출 역량 진단 — 서술형 답변 후 AI가 점수화합니다</p>
+    <div style="background:#EBF3FC;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#185FA5">
+      💡 각 질문에 자유롭게 답변해주세요. AI가 내용을 분석하여 역량을 점수화합니다.
+    </div>
     <div id="diag-list"></div>
     <div class="field" style="margin-top:1rem">
       <label>미팅 중 특이사항 / 추가 메모</label>
       <textarea id="f-meetmemo" rows="3" placeholder="고객사 반응, 추가로 파악된 정보, 논의된 내용..."></textarea>
     </div>
-    <button class="btn-primary" onclick="calcAndGo()">진단 완료 → 결과 &amp; 바이어 전략 보기</button>
+    <button class="btn-primary" id="diag-submit-btn" onclick="calcAndGo()">✦ AI 역량 분석 시작 →</button>
   </section>
 
-  <!-- STEP 2: 바이어 전략 -->
+    <!-- STEP 2: 바이어 전략 -->
   <section class="panel" id="p2">
     <p class="sec-label">역량 진단 결과</p>
     <div class="metric-row" id="metrics"></div>
@@ -273,7 +275,7 @@
     <div id="sheets-status" style="display:none;padding:.6rem 1rem;border-radius:6px;font-size:12px;margin-top:.5rem"></div>
     <p style="font-size:11px;color:#9c9a92;margin-top:.5rem">저장 시 기업정보·진단결과·연락처·액션아이템이 팀 구글시트에 자동 기록됩니다</p>
 
-    <button class="btn-outline" onclick="goStep(4)">수출 로드맵 생성하기 →</button>
+    
   </section>
 
   <!-- STEP 4: 수출 로드맵 (AI 생성) -->
