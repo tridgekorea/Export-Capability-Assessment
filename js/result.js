@@ -29,15 +29,20 @@ function renderResult() {
   const market  = getField('f-market') || '미국';
   const product = getField('f-product') || '가공식품';
 
+  // AI 채점 근거
+  const reasons = STATE.aiReasons || {};
+  const reasonRows = Object.entries(reasons).map(([area, reason]) =>
+    `<tr><td style="font-weight:500;color:#5f5e5a;width:30%;padding:5px 8px;border:1px solid #e0ddd6">${area}</td><td style="padding:5px 8px;border:1px solid #e0ddd6;font-size:11px;color:#1a1a18">${reason}</td></tr>`
+  ).join('');
+
   document.getElementById('insights-box').innerHTML = `
     <div class="insight info"><div class="it">✓ 강점 영역</div>
       <p>${strong.length ? strong.join(', ') + '이 우수합니다. ARK 아웃리치 메시지 작성 시 이 역량을 핵심 피칭 포인트로 활용하세요.' : '진단 항목을 더 입력해주세요.'}</p></div>
     <div class="insight warn"><div class="it">⚠ 보완 필요</div>
       <p>${weak.length ? weak.join(', ') + ' 역량이 취약합니다. ARK가 아웃리치·미팅 세팅을 대행하는 동안 이 영역을 병행 보완하세요.' : '전반적으로 양호한 수준입니다.'}</p></div>
-    <div class="insight ok"><div class="it">💡 다음 단계</div>
-      <p>ARK가 ${market} 내 ${product} 수요가 실재하는 바이어를 6.8억 건 실거래 데이터에서 발굴하고, 30개+ 언어로 직접 아웃리치를 대행합니다. 계약 후 실제 바이어 진단 리포트를 제공합니다.</p></div>`;
+    ${reasonRows ? `<div class="insight ok" style="margin-top:.75rem"><div class="it">🤖 AI 채점 근거</div><table style="width:100%;border-collapse:collapse;margin-top:.5rem">${reasonRows}</table></div>` : ''}`;
 
-  // ARK 실행 프로세스
+  // ARK 실행 프로세스 + 시연 안내
   document.getElementById('ark-strategy').innerHTML = `
     <div class="insight info"><div class="it">ARK 실행 프로세스</div>
       <p style="line-height:2">
@@ -46,7 +51,15 @@ function renderResult() {
         <strong>3 AI 다국어 아웃리치</strong> — 30개+ 언어로 초개인화 메시지를 바이어에게 직접 발송합니다<br>
         <strong>4 미팅 세팅</strong> — 관심 바이어와의 미팅을 직접 잡고 초기 커뮤니케이션을 중계합니다<br>
         <span style="color:var(--color-text-tertiary);font-size:11px">※ 가격 협상·계약 체결은 고객사가 직접 진행합니다. ARK는 검증된 바이어를 테이블 위에 올리는 단계까지 책임집니다.</span>
-      </p></div>`;
+      </p></div>
+    <div style="margin-top:1rem;background:#1a1a18;border-radius:10px;padding:1.25rem 1.5rem;color:#fff">
+      <div style="font-size:11px;font-weight:600;color:#9c9a92;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Tridge ARK 플랫폼 시연</div>
+      <p style="font-size:13px;line-height:1.8;margin-bottom:.75rem">지금 바로 ARK 플랫폼에서 <strong style="color:#64B5F6">${product}</strong>의 실제 수출 적합도와 발굴 가능한 바이어 Pool을 확인해보시겠어요?</p>
+      <div style="font-size:12px;color:#9c9a92;line-height:1.8">
+        ① 제품·시장 수출 적합도 — 글로벌 실거래 데이터 기반 시장 적합성 진단<br>
+        ② Tridge 발굴 기반 수출 적합도 — 실제 발굴 가능한 바이어 Pool 기준 진단
+      </div>
+    </div>`;
 }
 
 function drawRadar(canvasId) {
